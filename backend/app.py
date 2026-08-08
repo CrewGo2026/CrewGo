@@ -121,6 +121,12 @@ def ore():
 # ==========================================================
 
 @app.route("/api/utente")
+@app.route("/mezzi")
+def mezzi():
+    if not autenticato():
+        return redirect("/")
+    return send_from_directory("../frontend", "mezzi.html")
+
 def api_utente():
 
     if not autenticato():
@@ -1077,6 +1083,160 @@ def api_dati_collegamento():
 
 
 # ==========================================================
+# ==========================================================
+# API MEZZI E ATTREZZATURE
+# ==========================================================
+
+@app.route("/api/mezzi", methods=["GET"])
+def api_elenco_mezzi():
+    if not autenticato():
+        return errore_non_autenticato()
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            m.id,
+            m.nome,
+            m.categoria,
+            m.marca,
+            m.modello,
+            m.targa,
+            m.matricola,
+            m.stato,
+            m.cantiere_id,
+            m.squadra_id,
+            m.note,
+            c.nome AS cantiere_nome,
+            s.nome AS squadra_nome
+        FROM mezzi m
+        LEFT JOIN cantieri c ON c.id = m.cantiere_id
+        LEFT JOIN squadre s ON s.id = m.squadra_id
+        ORDER BY m.id DESC
+    """)
+
+    risultati = [dict(riga) for riga in cursor.fetchall()]
+    conn.close()
+    return jsonify(risultati)
+
+
+@app.route("/api/mezzi", methods=["POST"])
+def api_crea_mezzo():
+    if not autenticato():
+        return errore_non_autenticato()
+
+    dati = dati_json()
+    nome = str(dati.get("nome", "")).strip()
+
+    if not nome:
+        return jsonify({"errore": "Il nome del mezzo è obbligatorio"}), 400
+
+    cantiere_id = dati.get("cantiere_id") or None
+    squadra_id = dati.get("squadra_id") or None
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO mezzi (
+            nome, categoria, marca, modello, targa, matricola,
+            stato, cantiere_id, squadra_id, note
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        nome,
+        str(dati.get("categoria", "Mezzo")).strip(),
+        str(dati.get("marca", "")).strip(),
+        str(dati.get("modello", "")).strip(),
+        str(dati.get("targa", "")).strip(),
+        str(dati.get("matricola", "")).strip(),
+        str(dati.get("stato", "Disponibile")).strip(),
+        cantiere_id,
+        squadra_id,
+        str(dati.get("note", "")).strip()
+    ))
+
+    conn.commit()
+    mezzo_id = cursor.lastrowid
+    conn.close()
+
+    return jsonify({"successo": True, "id": mezzo_id}), 201
+
+
+@app.route("/api/mezzi/<int:mezzo_id>", methods=["PUT"])
+def api_modifica_mezzo(mezzo_id):
+    if not autenticato():
+        return errore_non_autenticato()
+
+    dati = dati_json()
+    nome = str(dati.get("nome", "")).strip()
+
+    if not nome:
+        return jsonify({"errore": "Il nome del mezzo è obbligatorio"}), 400
+
+    cantiere_id = dati.get("cantiere_id") or None
+    squadra_id = dati.get("squadra_id") or None
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE mezzi
+        SET
+            nome = ?,
+            categoria = ?,
+            marca = ?,
+            modello = ?,
+            targa = ?,
+            matricola = ?,
+            stato = ?,
+            cantiere_id = ?,
+            squadra_id = ?,
+            note = ?
+        WHERE id = ?
+    """, (
+        nome,
+        str(dati.get("categoria", "Mezzo")).strip(),
+        str(dati.get("marca", "")).strip(),
+        str(dati.get("modello", "")).strip(),
+        str(dati.get("targa", "")).strip(),
+        str(dati.get("matricola", "")).strip(),
+        str(dati.get("stato", "Disponibile")).strip(),
+        cantiere_id,
+        squadra_id,
+        str(dati.get("note", "")).strip(),
+        mezzo_id
+    ))
+
+    conn.commit()
+    modificato = cursor.rowcount > 0
+    conn.close()
+
+    if not modificato:
+        return jsonify({"errore": "Mezzo non trovato"}), 404
+
+    return jsonify({"successo": True})
+
+
+@app.route("/api/mezzi/<int:mezzo_id>", methods=["DELETE"])
+def api_elimina_mezzo(mezzo_id):
+    if not autenticato():
+        return errore_non_autenticato()
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM mezzi WHERE id = ?", (mezzo_id,))
+    conn.commit()
+    eliminato = cursor.rowcount > 0
+    conn.close()
+
+    if not eliminato:
+        return jsonify({"errore": "Mezzo non trovato"}), 404
+
+    return jsonify({"successo": True})
+
 # LOGOUT
 # ==========================================================
 

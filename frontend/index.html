@@ -431,6 +431,66 @@
 
 
     <!-- ========================= -->
+    <!-- ========================= -->
+    <!-- SITUAZIONE MEZZI -->
+    <!-- ========================= -->
+
+    <div class="section">
+
+        <div class="section-header">
+            <h2>🚐 Situazione mezzi</h2>
+            <a class="section-link" href="/mezzi">Gestisci mezzi →</a>
+        </div>
+
+        <div class="stats">
+
+            <div class="stat">
+                <div class="stat-icon">🚐</div>
+                <div class="stat-number" id="totaleMezzi">0</div>
+                <div class="stat-label">Mezzi totali</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-icon">🟢</div>
+                <div class="stat-number" id="mezziDisponibili">0</div>
+                <div class="stat-label">Disponibili</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-icon">🔵</div>
+                <div class="stat-number" id="mezziInUso">0</div>
+                <div class="stat-label">In uso</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-icon">🟠</div>
+                <div class="stat-number" id="mezziManutenzione">0</div>
+                <div class="stat-label">In manutenzione</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-icon">🔴</div>
+                <div class="stat-number" id="mezziFuoriServizio">0</div>
+                <div class="stat-label">Fuori servizio</div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- AVVISI -->
+    <!-- ========================= -->
+
+    <div class="section" id="sezioneAvvisi" style="display:none;">
+        <div class="section-header">
+            <h2>🔔 Attenzione</h2>
+        </div>
+        <div id="listaAvvisi"></div>
+    </div>
+
+
     <!-- ACCESSO RAPIDO -->
     <!-- ========================= -->
 
@@ -502,6 +562,23 @@
 
                 <div class="quick-description">
                     Organizza squadre e capisquadra.
+                </div>
+
+            </a>
+
+
+            <a class="quick-card" href="/mezzi">
+
+                <div class="quick-icon">
+                    🚐
+                </div>
+
+                <div class="quick-title">
+                    Mezzi
+                </div>
+
+                <div class="quick-description">
+                    Gestisci furgoni, automezzi e attrezzature.
                 </div>
 
             </a>
@@ -759,6 +836,7 @@
     let datiOperai = [];
     let datiCantieri = [];
     let datiSquadre = [];
+      let datiMezzi = [];
     let datiOre = [];
 
 
@@ -781,7 +859,8 @@
                 rispostaOperai,
                 rispostaCantieri,
                 rispostaSquadre,
-                rispostaOre
+                rispostaOre,
+                  rispostaMezzi
             ] = await Promise.all([
 
                 fetch("/api/operai"),
@@ -790,7 +869,8 @@
 
                 fetch("/api/squadre"),
 
-                fetch("/api/ore")
+                fetch("/api/ore"),
+                  fetch("/api/mezzi")
 
             ]);
 
@@ -799,6 +879,7 @@
                 !rispostaOperai.ok ||
                 !rispostaCantieri.ok ||
                 !rispostaSquadre.ok ||
+                  !rispostaMezzi.ok ||
                 !rispostaOre.ok
             ) {
 
@@ -815,6 +896,7 @@
 
             datiSquadre = await rispostaSquadre.json();
 
+              datiMezzi = await rispostaMezzi.json();
             datiOre = await rispostaOre.json();
 
 
@@ -970,6 +1052,23 @@
             " ore";
 
 
+          const mezziTotali = datiMezzi.length;
+
+          const mezziDisponibili = datiMezzi.filter(mezzo => String(mezzo.stato || "").toLowerCase() === "disponibile").length;
+
+          const mezziInUso = datiMezzi.filter(mezzo => String(mezzo.stato || "").toLowerCase() === "in uso").length;
+
+          const mezziManutenzione = datiMezzi.filter(mezzo => String(mezzo.stato || "").toLowerCase() === "in manutenzione").length;
+
+          const mezziFuoriServizio = datiMezzi.filter(mezzo => String(mezzo.stato || "").toLowerCase() === "fuori servizio").length;
+
+          document.getElementById("totaleMezzi").textContent = mezziTotali;
+          document.getElementById("mezziDisponibili").textContent = mezziDisponibili;
+          document.getElementById("mezziInUso").textContent = mezziInUso;
+          document.getElementById("mezziManutenzione").textContent = mezziManutenzione;
+          document.getElementById("mezziFuoriServizio").textContent = mezziFuoriServizio;
+          aggiornaAvvisi();
+
         mostraCantieri(
             cantieriAttivi
         );
@@ -980,6 +1079,39 @@
         );
 
     }
+
+
+      function aggiornaAvvisi() {
+
+          const avvisi = [];
+
+          const mezziManutenzione = datiMezzi.filter(mezzo => String(mezzo.stato || "").toLowerCase() === "in manutenzione").length;
+          const mezziFuoriServizio = datiMezzi.filter(mezzo => String(mezzo.stato || "").toLowerCase() === "fuori servizio").length;
+          const operaiNonAttivi = datiOperai.filter(operaio => !eAttivo(operaio)).length;
+          const cantieriNonAttivi = datiCantieri.filter(cantiere => !eAttivo(cantiere)).length;
+          const squadreNonAttive = datiSquadre.filter(squadra => !eAttivo(squadra)).length;
+
+          if (mezziManutenzione > 0) avvisi.push("🚐 " + mezziManutenzione + " mezzo/i in manutenzione.");
+          if (mezziFuoriServizio > 0) avvisi.push("🔴 " + mezziFuoriServizio + " mezzo/i fuori servizio.");
+          if (operaiNonAttivi > 0) avvisi.push("👷 " + operaiNonAttivi + " operaio/i non attivo/i.");
+          if (cantieriNonAttivi > 0) avvisi.push("🏗️ " + cantieriNonAttivi + " cantiere/i non attivo/i.");
+          if (squadreNonAttive > 0) avvisi.push("👥 " + squadreNonAttive + " squadra/e non attiva/e.");
+
+          const sezione = document.getElementById("sezioneAvvisi");
+          const lista = document.getElementById("listaAvvisi");
+
+          if (!avvisi.length) {
+              sezione.style.display = "none";
+              lista.innerHTML = "";
+              return;
+          }
+
+          lista.innerHTML = avvisi.map(avviso =>
+              "<div class=\"quick-card\">" + escapeHtml(avviso) + "</div>"
+          ).join("");
+
+          sezione.style.display = "block";
+      }
 
 
     function formattaNumero(numero) {

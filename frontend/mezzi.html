@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CrewGo - Mezzi</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f3f5f8;color:#172033}
+header{background:#111827;color:white;padding:18px 30px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:26px;font-weight:bold}
+.back{color:white;text-decoration:none;border:1px solid #475569;padding:8px 12px;border-radius:8px}
+main{max-width:1200px;margin:auto;padding:30px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
+h1{margin:0 0 6px}.sub{color:#64748b}
+button{border:0;border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:bold}
+.primary{background:#2563eb;color:white}.danger{background:#dc2626;color:white}.edit{background:#e2e8f0}
+.filters{background:white;padding:16px;border-radius:12px;margin-bottom:20px;display:flex;gap:12px}
+input,select{padding:10px;border:1px solid #cbd5e1;border-radius:7px;flex:1}
+.table{background:white;border-radius:12px;overflow:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:12px;border-bottom:1px solid #e2e8f0;text-align:left;white-space:nowrap}
+th{background:#f8fafc}
+.badge{padding:5px 9px;border-radius:15px;background:#dcfce7;color:#166534;font-size:12px}
+.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}.box{background:white;padding:25px;border-radius:14px;width:100%;max-width:650px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}.full{grid-column:1/-1}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+@media(max-width:700px){.form{grid-template-columns:1fr}.full{grid-column:auto}.top,.filters{flex-direction:column;align-items:stretch}}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">CrewGo</div>
+<a class="back" href="/">← Dashboard</a>
+</header>
+
+<main>
+<div class="top">
+<div><h1>🚐 Mezzi e Attrezzature</h1><div class="sub">Gestisci mezzi, furgoni e attrezzature.</div></div>
+<button class="primary" onclick="nuovo()">+ Nuovo mezzo</button>
+</div>
+
+<div class="filters">
+<input id="cerca" placeholder="Cerca nome, targa, marca..." oninput="render()">
+<select id="fc" onchange="render()"><option value="">Tutte le categorie</option><option>Mezzo</option><option>Furgone</option><option>Automezzo</option><option>Attrezzatura</option><option>Altro</option></select>
+<select id="fs" onchange="render()"><option value="">Tutti gli stati</option><option>Disponibile</option><option>In uso</option><option>Manutenzione</option><option>Fuori servizio</option></select>
+</div>
+
+<div class="table">
+<table>
+<thead><tr><th>Nome</th><th>Categoria</th><th>Marca/Modello</th><th>Targa</th><th>Stato</th><th>Cantiere</th><th>Squadra</th><th>Azioni</th></tr></thead>
+<tbody id="lista"></tbody>
+</table>
+</div>
+</main>
+
+<div id="modal" class="modal">
+<div class="box">
+<h2 id="titolo">Nuovo mezzo</h2>
+<div class="form">
+<div class="field"><label>Nome *</label><input id="nome"></div>
+<div class="field"><label>Categoria</label><select id="categoria"><option>Mezzo</option><option>Furgone</option><option>Automezzo</option><option>Attrezzatura</option><option>Altro</option></select></div>
+<div class="field"><label>Marca</label><input id="marca"></div>
+<div class="field"><label>Modello</label><input id="modello"></div>
+<div class="field"><label>Targa</label><input id="targa"></div>
+<div class="field"><label>Matricola</label><input id="matricola"></div>
+<div class="field"><label>Stato</label><select id="stato"><option>Disponibile</option><option>In uso</option><option>Manutenzione</option><option>Fuori servizio</option></select></div>
+<div class="field"><label>Cantiere</label><select id="cantiere"><option value="">Nessuno</option></select></div>
+<div class="field"><label>Squadra</label><select id="squadra"><option value="">Nessuna</option></select></div>
+<div class="field full"><label>Note</label><input id="note"></div>
+</div>
+<div class="actions"><button class="edit" onclick="chiudi()">Annulla</button><button class="primary" onclick="salva()">Salva</button></div>
+</div>
+</div>
+
+<script>
+let mezzi=[],cantieri=[],squadre=[],editId=null;
+
+async function carica(){
+const r=await fetch("/api/mezzi"); mezzi=await r.json();
+const c=await fetch("/api/cantieri"); if(c.ok)cantieri=await c.json();
+const s=await fetch("/api/squadre"); if(s.ok)squadre=await s.json();
+popola();render();
+}
+
+function popola(){
+cantiere.innerHTML='<option value="">Nessuno</option>';
+cantieri.forEach(x=>cantiere.innerHTML+=`<option value="${x.id}">${x.nome}</option>`);
+squadra.innerHTML='<option value="">Nessuna</option>';
+squadre.forEach(x=>squadra.innerHTML+=`<option value="${x.id}">${x.nome}</option>`);
+}
+
+function render(){
+const q=cerca.value.toLowerCase(),cat=fc.value,st=fs.value;
+lista.innerHTML="";
+const arr=mezzi.filter(x=>{
+const testo=`${x.nome||""} ${x.marca||""} ${x.modello||""} ${x.targa||""}`.toLowerCase();
+return (!q||testo.includes(q))&&(!cat||x.categoria===cat)&&(!st||x.stato===st);
+});
+if(!arr.length){lista.innerHTML='<tr><td colspan="8" style="text-align:center;padding:35px">Nessun mezzo trovato.</td></tr>';return}
+arr.forEach(x=>{
+lista.innerHTML+=`<tr>
+<td><b>${x.nome||""}</b></td><td>${x.categoria||""}</td>
+<td>${x.marca||""} ${x.modello||""}</td><td>${x.targa||"-"}</td>
+<td><span class="badge">${x.stato||""}</span></td>
+<td>${x.cantiere_nome||"-"}</td><td>${x.squadra_nome||"-"}</td>
+<td><button class="edit" onclick="modifica(${x.id})">Modifica</button>
+<button class="danger" onclick="elimina(${x.id})">Elimina</button></td></tr>`;
+});
+}
+
+function nuovo(){
+editId=null;titolo.textContent="Nuovo mezzo";
+nome.value="";categoria.value="Mezzo";marca.value="";modello.value="";
+targa.value="";matricola.value="";stato.value="Disponibile";
+cantiere.value="";squadra.value="";note.value="";
+modal.classList.add("open");
+}
+
+function modifica(id){
+const x=mezzi.find(a=>a.id===id);if(!x)return;
+editId=id;titolo.textContent="Modifica mezzo";
+nome.value=x.nome||"";categoria.value=x.categoria||"Mezzo";
+marca.value=x.marca||"";modello.value=x.modello||"";
+targa.value=x.targa||"";matricola.value=x.matricola||"";
+stato.value=x.stato||"Disponibile";cantiere.value=x.cantiere_id||"";
+squadra.value=x.squadra_id||"";note.value=x.note||"";
+modal.classList.add("open");
+}
+
+function chiudi(){modal.classList.remove("open")}
+
+async function salva(){
+if(!nome.value.trim()){alert("Il nome è obbligatorio");return}
+const dati={nome:nome.value.trim(),categoria:categoria.value,marca:marca.value.trim(),modello:modello.value.trim(),targa:targa.value.trim(),matricola:matricola.value.trim(),stato:stato.value,cantiere_id:cantiere.value||null,squadra_id:squadra.value||null,note:note.value.trim()};
+const url=editId?`/api/mezzi/${editId}`:"/api/mezzi";
+const r=await fetch(url,{method:editId?"PUT":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(dati)});
+const out=await r.json();if(!r.ok){alert(out.errore||"Errore");return}
+chiudi();await carica();
+}
+
+async function elimina(id){
+const x=mezzi.find(a=>a.id===id);if(!confirm(`Eliminare "${x.nome}"?`))return;
+const r=await fetch(`/api/mezzi/${id}`,{method:"DELETE"});
+const out=await r.json();if(!r.ok){alert(out.errore||"Errore");return}
+await carica();
+}
+
+carica();
+</script>
+</body>
+</html>
