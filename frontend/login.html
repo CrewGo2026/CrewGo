@@ -93,19 +93,24 @@
         Accedi alla tua piattaforma
     </div>
 
-    <form>
+    <form action="/login" method="POST">
+
         <label for="email">Email</label>
+
         <input
             type="email"
             id="email"
+            name="email"
             placeholder="La tua email"
             required
         >
 
         <label for="password">Password</label>
+
         <input
             type="password"
             id="password"
+            name="password"
             placeholder="La tua password"
             required
         >
@@ -113,6 +118,7 @@
         <button type="submit">
             ACCEDI
         </button>
+
     </form>
 
     <div class="info">
