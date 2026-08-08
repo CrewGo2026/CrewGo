@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>CrewGo - Squadre</title>
 
     <style>
@@ -55,7 +54,7 @@
         }
 
         main {
-            max-width: 1250px;
+            max-width: 1300px;
             margin: auto;
             padding: 30px;
         }
@@ -123,14 +122,21 @@
             color: #64748b;
         }
 
-        .search {
+        .filters {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filters input,
+        .filters select {
             width: 100%;
-            padding: 14px;
+            padding: 13px;
             border: 1px solid #cbd5e1;
             border-radius: 10px;
-            font-size: 16px;
-            margin-bottom: 20px;
             background: white;
+            font-size: 15px;
         }
 
         .table-box {
@@ -196,9 +202,9 @@
             color: #1d4ed8;
         }
 
-        .disable {
-            background: #fef3c7;
-            color: #92400e;
+        .people {
+            background: #ede9fe;
+            color: #6d28d9;
         }
 
         .delete {
@@ -206,10 +212,20 @@
             color: #991b1b;
         }
 
-        .empty {
+        .empty,
+        .loading {
             text-align: center;
             padding: 50px 20px;
             color: #64748b;
+        }
+
+        .error {
+            display: none;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
         }
 
         .modal {
@@ -229,7 +245,7 @@
 
         .modal-box {
             width: 100%;
-            max-width: 650px;
+            max-width: 750px;
             background: white;
             border-radius: 18px;
             padding: 30px;
@@ -266,10 +282,6 @@
         .form-group {
             display: flex;
             flex-direction: column;
-        }
-
-        .form-group.full {
-            grid-column: 1 / -1;
         }
 
         label {
@@ -314,6 +326,32 @@
             cursor: pointer;
         }
 
+        .people-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .person-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 9px;
+            background: #f8fafc;
+        }
+
+        .person-name {
+            font-weight: bold;
+        }
+
+        .assign-box {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
         @media (max-width: 700px) {
 
             .top {
@@ -325,12 +363,12 @@
                 grid-template-columns: 1fr;
             }
 
-            .form-grid {
+            .filters {
                 grid-template-columns: 1fr;
             }
 
-            .form-group.full {
-                grid-column: auto;
+            .form-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -366,17 +404,23 @@
     </a>
 
 
+    <div id="errore" class="error"></div>
+
+
     <div class="top">
 
         <div>
             <h1>Squadre</h1>
 
             <div class="subtitle">
-                Organizza squadre, capisquadra, operai e cantieri.
+                Organizza squadre, capisquadra, cantieri e operai.
             </div>
         </div>
 
-        <button class="add-button" onclick="apriNuovaSquadra()">
+        <button
+            class="add-button"
+            onclick="apriNuovaSquadra()"
+        >
             + AGGIUNGI SQUADRA
         </button>
 
@@ -386,47 +430,42 @@
     <div class="stats">
 
         <div class="stat">
-            <div class="stat-number" id="totaleSquadre">
-                0
-            </div>
-
-            <div class="stat-label">
-                Totale squadre
-            </div>
+            <div class="stat-number" id="totaleSquadre">0</div>
+            <div class="stat-label">Totale squadre</div>
         </div>
 
-
         <div class="stat">
-            <div class="stat-number" id="squadreAttive">
-                0
-            </div>
-
-            <div class="stat-label">
-                Squadre attive
-            </div>
+            <div class="stat-number" id="squadreAttive">0</div>
+            <div class="stat-label">Squadre attive</div>
         </div>
 
-
         <div class="stat">
-            <div class="stat-number" id="squadreInattive">
-                0
-            </div>
-
-            <div class="stat-label">
-                Squadre non attive
-            </div>
+            <div class="stat-number" id="totaleAssegnati">0</div>
+            <div class="stat-label">Operai assegnati</div>
         </div>
 
     </div>
 
 
-    <input
-        class="search"
-        id="ricerca"
-        type="text"
-        placeholder="🔍 Cerca squadra, caposquadra o cantiere..."
-        oninput="mostraSquadre()"
-    >
+    <div class="filters">
+
+        <input
+            id="ricerca"
+            type="text"
+            placeholder="🔍 Cerca squadra, caposquadra o cantiere..."
+            oninput="mostraSquadre()"
+        >
+
+        <select
+            id="filtroStato"
+            onchange="mostraSquadre()"
+        >
+            <option value="">Tutti gli stati</option>
+            <option value="Attiva">Attive</option>
+            <option value="Non attiva">Non attive</option>
+        </select>
+
+    </div>
 
 
     <div class="table-box">
@@ -446,7 +485,17 @@
 
             </thead>
 
+
             <tbody id="tabellaSquadre">
+
+                <tr>
+                    <td colspan="6">
+                        <div class="loading">
+                            Caricamento squadre...
+                        </div>
+                    </td>
+                </tr>
+
             </tbody>
 
         </table>
@@ -456,7 +505,14 @@
 </main>
 
 
-<div class="modal" id="modalSquadra">
+<!-- =====================================================
+     MODALE SQUADRA
+===================================================== -->
+
+<div
+    class="modal"
+    id="modalSquadra"
+>
 
     <div class="modal-box">
 
@@ -466,7 +522,10 @@
                 Aggiungi squadra
             </h2>
 
-            <button class="close" onclick="chiudiModal()">
+            <button
+                class="close"
+                onclick="chiudiModal()"
+            >
                 ×
             </button>
 
@@ -475,7 +534,10 @@
 
         <form id="formSquadra">
 
-            <input type="hidden" id="squadraId">
+            <input
+                type="hidden"
+                id="squadraId"
+            >
 
 
             <div class="form-grid">
@@ -483,7 +545,7 @@
                 <div class="form-group">
 
                     <label for="nome">
-                        Nome squadra
+                        Nome squadra *
                     </label>
 
                     <input
@@ -502,43 +564,30 @@
                         Caposquadra
                     </label>
 
-                    <input
-                        id="caposquadra"
-                        type="text"
-                        placeholder="Nome caposquadra"
-                        required
-                    >
+                    <select id="caposquadra">
 
-                </div>
+                        <option value="">
+                            Nessun caposquadra
+                        </option>
 
-
-                <div class="form-group full">
-
-                    <label for="cantiere">
-                        Cantiere assegnato
-                    </label>
-
-                    <input
-                        id="cantiere"
-                        type="text"
-                        placeholder="Es. Fiera Milano"
-                    >
+                    </select>
 
                 </div>
 
 
                 <div class="form-group">
 
-                    <label for="operai">
-                        Numero operai
+                    <label for="cantiere">
+                        Cantiere
                     </label>
 
-                    <input
-                        id="operai"
-                        type="number"
-                        min="0"
-                        value="0"
-                    >
+                    <select id="cantiere">
+
+                        <option value="">
+                            Nessun cantiere
+                        </option>
+
+                    </select>
 
                 </div>
 
@@ -592,27 +641,263 @@
 </div>
 
 
+<!-- =====================================================
+     MODALE OPERAI
+===================================================== -->
+
+<div
+    class="modal"
+    id="modalOperai"
+>
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h2>
+                Operai della squadra
+            </h2>
+
+            <button
+                class="close"
+                onclick="chiudiOperai()"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div id="nomeSquadraOperai"></div>
+
+
+        <div
+            class="people-list"
+            id="listaOperaiSquadra"
+        >
+        </div>
+
+
+        <div class="assign-box">
+
+            <label for="operaioDaAssegnare">
+                Aggiungi operaio
+            </label>
+
+            <select id="operaioDaAssegnare">
+
+                <option value="">
+                    Seleziona operaio
+                </option>
+
+            </select>
+
+
+            <button
+                class="save"
+                style="margin-top: 12px;"
+                onclick="assegnaOperaio()"
+            >
+                ASSEGNA ALLA SQUADRA
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
 <script>
 
-    let squadre = JSON.parse(
-        localStorage.getItem("crewgo_squadre") || "[]"
-    );
+    let squadre = [];
+
+    let operai = [];
+
+    let cantieri = [];
+
+    let squadraOperaiId = null;
 
 
-    function salvaDati() {
+    function mostraErrore(messaggio) {
 
-        localStorage.setItem(
-            "crewgo_squadre",
-            JSON.stringify(squadre)
-        );
+        const box =
+            document.getElementById("errore");
 
+        box.textContent =
+            messaggio;
+
+        box.style.display =
+            "block";
     }
 
 
-    function generaId() {
+    function nascondiErrore() {
 
-        return Date.now().toString();
+        document
+            .getElementById("errore")
+            .style.display =
+            "none";
+    }
 
+
+    async function caricaDati() {
+
+        try {
+
+            nascondiErrore();
+
+            const risposta =
+                await fetch(
+                    "/api/dati-collegamento"
+                );
+
+            if (!risposta.ok) {
+
+                throw new Error(
+                    "Impossibile caricare i dati."
+                );
+            }
+
+            const dati =
+                await risposta.json();
+
+            operai =
+                dati.operai || [];
+
+            cantieri =
+                dati.cantieri || [];
+
+            await caricaSquadre();
+
+        } catch (errore) {
+
+            mostraErrore(
+                errore.message
+            );
+        }
+    }
+
+
+    async function caricaSquadre() {
+
+        const risposta =
+            await fetch(
+                "/api/squadre"
+            );
+
+        if (!risposta.ok) {
+
+            throw new Error(
+                "Impossibile caricare le squadre."
+            );
+        }
+
+        squadre =
+            await risposta.json();
+
+        mostraSquadre();
+    }
+
+
+    function riempiCapisquadra(
+        caposquadraId = ""
+    ) {
+
+        const select =
+            document.getElementById(
+                "caposquadra"
+            );
+
+        select.innerHTML = `
+            <option value="">
+                Nessun caposquadra
+            </option>
+        `;
+
+
+        operai
+            .filter(
+                operaio =>
+                    operaio.stato === "Attivo"
+            )
+            .forEach(operaio => {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+                option.value =
+                    operaio.id;
+
+                option.textContent =
+                    operaio.nome +
+                    " " +
+                    operaio.cognome;
+
+                if (
+                    String(operaio.id) ===
+                    String(caposquadraId)
+                ) {
+
+                    option.selected =
+                        true;
+                }
+
+                select.appendChild(
+                    option
+                );
+
+            });
+    }
+
+
+    function riempiCantieri(
+        cantiereId = ""
+    ) {
+
+        const select =
+            document.getElementById(
+                "cantiere"
+            );
+
+        select.innerHTML = `
+            <option value="">
+                Nessun cantiere
+            </option>
+        `;
+
+
+        cantieri.forEach(cantiere => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                cantiere.id;
+
+            option.textContent =
+                cantiere.nome +
+                " — " +
+                cantiere.cliente;
+
+            if (
+                String(cantiere.id) ===
+                String(cantiereId)
+            ) {
+
+                option.selected =
+                    true;
+            }
+
+            select.appendChild(
+                option
+            );
+
+        });
     }
 
 
@@ -626,18 +911,18 @@
             .getElementById("squadraId")
             .value = "";
 
-        document
-            .getElementById("operai")
-            .value = 0;
+        riempiCapisquadra();
+
+        riempiCantieri();
 
         document
             .getElementById("titoloModal")
-            .textContent = "Aggiungi squadra";
+            .textContent =
+            "Aggiungi squadra";
 
         document
             .getElementById("modalSquadra")
             .classList.add("show");
-
     }
 
 
@@ -646,123 +931,319 @@
         document
             .getElementById("modalSquadra")
             .classList.remove("show");
-
     }
-
-
-    document
-        .getElementById("formSquadra")
-        .addEventListener("submit", function(event) {
-
-            event.preventDefault();
-
-
-            const id =
-                document.getElementById("squadraId").value;
-
-
-            const squadra = {
-
-                id: id || generaId(),
-
-                nome:
-                    document.getElementById("nome").value.trim(),
-
-                caposquadra:
-                    document.getElementById("caposquadra").value.trim(),
-
-                cantiere:
-                    document.getElementById("cantiere").value.trim(),
-
-                operai:
-                    Number(
-                        document.getElementById("operai").value
-                    ) || 0,
-
-                stato:
-                    document.getElementById("stato").value
-
-            };
-
-
-            if (id) {
-
-                const indice =
-                    squadre.findIndex(
-                        item => item.id === id
-                    );
-
-
-                if (indice !== -1) {
-
-                    squadre[indice] = squadra;
-
-                }
-
-            } else {
-
-                squadre.push(squadra);
-
-            }
-
-
-            salvaDati();
-
-            mostraSquadre();
-
-            chiudiModal();
-
-        });
 
 
     function modificaSquadra(id) {
 
         const squadra =
             squadre.find(
-                item => item.id === id
+                item =>
+                    item.id === id
             );
-
 
         if (!squadra) {
             return;
         }
 
 
-        document.getElementById("squadraId").value =
+        document
+            .getElementById("squadraId")
+            .value =
             squadra.id;
 
-        document.getElementById("nome").value =
-            squadra.nome;
 
-        document.getElementById("caposquadra").value =
-            squadra.caposquadra;
-
-        document.getElementById("cantiere").value =
-            squadra.cantiere;
-
-        document.getElementById("operai").value =
-            squadra.operai;
-
-        document.getElementById("stato").value =
-            squadra.stato;
+        document
+            .getElementById("nome")
+            .value =
+            squadra.nome || "";
 
 
-        document.getElementById("titoloModal").textContent =
+        /*
+         * La nuova versione usa caposquadra_id.
+         * Se una vecchia squadra non lo possiede ancora,
+         * proviamo a ricavarlo dal nome precedente.
+         */
+
+        let caposquadraId =
+            squadra.caposquadra_id || "";
+
+
+        if (
+            !caposquadraId &&
+            squadra.caposquadra
+        ) {
+
+            const nomeVecchio =
+                squadra.caposquadra
+                    .trim()
+                    .toLowerCase();
+
+
+            const trovato =
+                operai.find(operaio => {
+
+                    const nomeCompleto =
+                        (
+                            operaio.nome +
+                            " " +
+                            operaio.cognome
+                        )
+                        .trim()
+                        .toLowerCase();
+
+                    return (
+                        nomeCompleto ===
+                        nomeVecchio
+                    );
+
+                });
+
+
+            if (trovato) {
+
+                caposquadraId =
+                    trovato.id;
+            }
+        }
+
+
+        riempiCapisquadra(
+            caposquadraId
+        );
+
+
+        riempiCantieri(
+            squadra.cantiere_id || ""
+        );
+
+
+        document
+            .getElementById("stato")
+            .value =
+            squadra.stato || "Attiva";
+
+
+        document
+            .getElementById("titoloModal")
+            .textContent =
             "Modifica squadra";
 
 
         document
             .getElementById("modalSquadra")
             .classList.add("show");
-
     }
 
 
-    function cambiaStato(id) {
+    document
+        .getElementById("formSquadra")
+        .addEventListener(
+            "submit",
+            async function(event) {
+
+                event.preventDefault();
+
+                nascondiErrore();
+
+
+                const id =
+                    document
+                        .getElementById("squadraId")
+                        .value;
+
+
+                const caposquadraSelect =
+                    document
+                        .getElementById(
+                            "caposquadra"
+                        );
+
+
+                const caposquadraId =
+                    caposquadraSelect.value ||
+                    null;
+
+
+                const caposquadraNome =
+                    caposquadraId
+                    ? caposquadraSelect
+                        .options[
+                            caposquadraSelect
+                                .selectedIndex
+                        ]
+                        .textContent
+                    : "";
+
+
+                const dati = {
+
+                    nome:
+                        document
+                            .getElementById("nome")
+                            .value
+                            .trim(),
+
+                    caposquadra_id:
+                        caposquadraId
+                        ? Number(
+                            caposquadraId
+                        )
+                        : null,
+
+                    caposquadra:
+                        caposquadraNome,
+
+                    cantiere_id:
+                        document
+                            .getElementById("cantiere")
+                            .value
+                        ? Number(
+                            document
+                                .getElementById(
+                                    "cantiere"
+                                )
+                                .value
+                          )
+                        : null,
+
+                    stato:
+                        document
+                            .getElementById("stato")
+                            .value
+                };
+
+
+                try {
+
+                    let risposta;
+
+
+                    if (id) {
+
+                        risposta =
+                            await fetch(
+                                `/api/squadre/${id}`,
+                                {
+                                    method: "PUT",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+
+                                    body:
+                                        JSON.stringify(
+                                            dati
+                                        )
+                                }
+                            );
+
+                    } else {
+
+                        risposta =
+                            await fetch(
+                                "/api/squadre",
+                                {
+                                    method: "POST",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+
+                                    body:
+                                        JSON.stringify(
+                                            dati
+                                        )
+                                }
+                            );
+                    }
+
+
+                    const risultato =
+                        await risposta.json();
+
+
+                    if (!risposta.ok) {
+
+                        throw new Error(
+                            risultato.errore ||
+                            "Errore durante il salvataggio."
+                        );
+                    }
+
+
+                    chiudiModal();
+
+                    await caricaDati();
+
+                } catch (errore) {
+
+                    mostraErrore(
+                        errore.message
+                    );
+                }
+
+            }
+        );
+
+
+    async function eliminaSquadra(id) {
+
+        if (!confirm(
+            "Sei sicuro di voler eliminare questa squadra?"
+        )) {
+
+            return;
+        }
+
+
+        try {
+
+            const risposta =
+                await fetch(
+                    `/api/squadre/${id}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+
+            const risultato =
+                await risposta.json();
+
+
+            if (!risposta.ok) {
+
+                throw new Error(
+                    risultato.errore ||
+                    "Errore durante l'eliminazione."
+                );
+            }
+
+
+            await caricaDati();
+
+        } catch (errore) {
+
+            mostraErrore(
+                errore.message
+            );
+        }
+    }
+
+
+    async function apriOperai(id) {
+
+        squadraOperaiId =
+            id;
+
 
         const squadra =
             squadre.find(
-                item => item.id === id
+                item =>
+                    item.id === id
             );
 
 
@@ -771,178 +1252,527 @@
         }
 
 
-        if (squadra.stato === "Attiva") {
-
-            squadra.stato = "Non attiva";
-
-        } else {
-
-            squadra.stato = "Attiva";
-
-        }
+        document
+            .getElementById(
+                "nomeSquadraOperai"
+            )
+            .textContent =
+            "Squadra: " +
+            squadra.nome;
 
 
-        salvaDati();
+        riempiOperai();
 
-        mostraSquadre();
 
+        document
+            .getElementById(
+                "modalOperai"
+            )
+            .classList.add("show");
+
+
+        await caricaOperaiSquadra();
     }
 
 
-    function eliminaSquadra(id) {
+    function chiudiOperai() {
 
-        const conferma =
-            confirm(
-                "Sei sicuro di voler eliminare questa squadra?"
+        document
+            .getElementById(
+                "modalOperai"
+            )
+            .classList.remove("show");
+
+        squadraOperaiId =
+            null;
+    }
+
+
+    function riempiOperai() {
+
+        const select =
+            document.getElementById(
+                "operaioDaAssegnare"
             );
 
 
-        if (!conferma) {
+        select.innerHTML = `
+            <option value="">
+                Seleziona operaio
+            </option>
+        `;
+
+
+        operai
+            .filter(
+                operaio =>
+                    operaio.stato === "Attivo"
+            )
+            .forEach(operaio => {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+                option.value =
+                    operaio.id;
+
+                option.textContent =
+                    operaio.nome +
+                    " " +
+                    operaio.cognome;
+
+                select.appendChild(
+                    option
+                );
+            });
+    }
+
+
+    async function caricaOperaiSquadra() {
+
+        if (!squadraOperaiId) {
             return;
         }
 
 
-        squadre =
-            squadre.filter(
-                item => item.id !== id
+        try {
+
+            const risposta =
+                await fetch(
+                    `/api/squadre/${squadraOperaiId}/operai`
+                );
+
+
+            if (!risposta.ok) {
+
+                throw new Error(
+                    "Impossibile caricare gli operai della squadra."
+                );
+            }
+
+
+            const assegnati =
+                await risposta.json();
+
+
+            const lista =
+                document.getElementById(
+                    "listaOperaiSquadra"
+                );
+
+
+            lista.innerHTML = "";
+
+
+            if (
+                assegnati.length === 0
+            ) {
+
+                lista.innerHTML = `
+                    <div class="empty">
+                        Nessun operaio assegnato.
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            assegnati.forEach(operaio => {
+
+                const elemento =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                elemento.className =
+                    "person-row";
+
+
+                const squadra =
+                    squadre.find(
+                        item =>
+                            item.id ===
+                            squadraOperaiId
+                    );
+
+
+                const isCaposquadra =
+                    squadra &&
+                    squadra.caposquadra_id &&
+                    Number(
+                        squadra.caposquadra_id
+                    ) === Number(
+                        operaio.id
+                    );
+
+
+                elemento.innerHTML = `
+
+                    <div>
+
+                        <div class="person-name">
+
+                            ${escapeHtml(
+                                operaio.nome
+                            )}
+
+                            ${escapeHtml(
+                                operaio.cognome
+                            )}
+
+                            ${
+                                isCaposquadra
+                                ? " ⭐ CAPOSQUADRA"
+                                : ""
+                            }
+
+                        </div>
+
+                        <small>
+                            ${escapeHtml(
+                                operaio.mansione || ""
+                            )}
+                        </small>
+
+                    </div>
+
+                `;
+
+
+                lista.appendChild(
+                    elemento
+                );
+
+            });
+
+        } catch (errore) {
+
+            mostraErrore(
+                errore.message
+            );
+        }
+    }
+
+
+    async function assegnaOperaio() {
+
+        const operaioId =
+            document
+                .getElementById(
+                    "operaioDaAssegnare"
+                )
+                .value;
+
+
+        if (!squadraOperaiId) {
+            return;
+        }
+
+
+        if (!operaioId) {
+
+            alert(
+                "Seleziona un operaio."
             );
 
+            return;
+        }
 
-        salvaDati();
 
-        mostraSquadre();
+        try {
 
+            const risposta =
+                await fetch(
+                    `/api/squadre/${squadraOperaiId}/operai`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                operaio_id:
+                                    Number(
+                                        operaioId
+                                    )
+                            })
+                    }
+                );
+
+
+            const risultato =
+                await risposta.json();
+
+
+            if (!risposta.ok) {
+
+                throw new Error(
+                    risultato.errore ||
+                    "Errore durante l'assegnazione."
+                );
+            }
+
+
+            document
+                .getElementById(
+                    "operaioDaAssegnare"
+                )
+                .value = "";
+
+
+            await caricaDati();
+
+            await caricaOperaiSquadra();
+
+        } catch (errore) {
+
+            mostraErrore(
+                errore.message
+            );
+        }
     }
 
 
     function mostraSquadre() {
 
         const tbody =
-            document.getElementById("tabellaSquadre");
+            document.getElementById(
+                "tabellaSquadre"
+            );
+
 
         const ricerca =
             document
-                .getElementById("ricerca")
+                .getElementById(
+                    "ricerca"
+                )
                 .value
                 .toLowerCase()
                 .trim();
 
 
+        const filtroStato =
+            document
+                .getElementById(
+                    "filtroStato"
+                )
+                .value;
+
+
         const filtrate =
-            squadre.filter(squadra => {
+            squadre.filter(
+                squadra => {
 
-                const testo = (
+                    const testo = (
 
-                    squadra.nome + " " +
-                    squadra.caposquadra + " " +
-                    squadra.cantiere
+                        squadra.nome +
+                        " " +
+                        (
+                            squadra.caposquadra ||
+                            ""
+                        ) +
+                        " " +
+                        (
+                            squadra.cantiere_nome ||
+                            ""
+                        )
 
-                ).toLowerCase();
+                    ).toLowerCase();
 
 
-                return testo.includes(ricerca);
-
-            });
+                    return (
+                        testo.includes(
+                            ricerca
+                        ) &&
+                        (
+                            !filtroStato ||
+                            squadra.stato ===
+                            filtroStato
+                        )
+                    );
+                }
+            );
 
 
         tbody.innerHTML = "";
 
 
-        if (filtrate.length === 0) {
+        if (
+            filtrate.length === 0
+        ) {
 
             tbody.innerHTML = `
                 <tr>
+
                     <td colspan="6">
+
                         <div class="empty">
+
                             ${
                                 squadre.length === 0
-                                ? "Nessuna squadra inserita."
+                                ? "Nessuna squadra presente nel database."
                                 : "Nessun risultato trovato."
                             }
+
                         </div>
+
                     </td>
+
                 </tr>
             `;
 
         } else {
 
-            filtrate.forEach(squadra => {
+            filtrate.forEach(
+                squadra => {
 
-                const riga =
-                    document.createElement("tr");
-
-
-                const classeStato =
-                    squadra.stato === "Attiva"
-                    ? "active"
-                    : "inactive";
+                    const riga =
+                        document.createElement(
+                            "tr"
+                        );
 
 
-                riga.innerHTML = `
-
-                    <td class="name">
-                        ${escapeHtml(squadra.nome)}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(squadra.caposquadra)}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(squadra.cantiere || "Da assegnare")}
-                    </td>
-
-                    <td>
-                        ${squadra.operai}
-                    </td>
-
-                    <td>
-                        <span class="status ${classeStato}">
-                            ${escapeHtml(squadra.stato)}
-                        </span>
-                    </td>
-
-                    <td>
-
-                        <button
-                            class="action-button edit"
-                            onclick="modificaSquadra('${squadra.id}')"
-                        >
-                            Modifica
-                        </button>
-
-                        <button
-                            class="action-button disable"
-                            onclick="cambiaStato('${squadra.id}')"
-                        >
-                            ${
-                                squadra.stato === "Attiva"
-                                ? "Disattiva"
-                                : "Attiva"
-                            }
-                        </button>
-
-                        <button
-                            class="action-button delete"
-                            onclick="eliminaSquadra('${squadra.id}')"
-                        >
-                            Elimina
-                        </button>
-
-                    </td>
-
-                `;
+                    const classe =
+                        squadra.stato ===
+                        "Attiva"
+                        ? "active"
+                        : "inactive";
 
 
-                tbody.appendChild(riga);
+                    let nomeCaposquadra =
+                        squadra.caposquadra ||
+                        "Nessun caposquadra";
 
-            });
 
+                    if (
+                        squadra.caposquadra_id
+                    ) {
+
+                        const operaio =
+                            operai.find(
+                                item =>
+                                    Number(
+                                        item.id
+                                    ) ===
+                                    Number(
+                                        squadra.caposquadra_id
+                                    )
+                            );
+
+
+                        if (operaio) {
+
+                            nomeCaposquadra =
+                                operaio.nome +
+                                " " +
+                                operaio.cognome;
+                        }
+                    }
+
+
+                    riga.innerHTML = `
+
+                        <td class="name">
+
+                            ${escapeHtml(
+                                squadra.nome
+                            )}
+
+                        </td>
+
+                        <td>
+
+                            ${escapeHtml(
+                                nomeCaposquadra
+                            )}
+
+                        </td>
+
+                        <td>
+
+                            ${escapeHtml(
+                                squadra.cantiere_nome ||
+                                "Non assegnato"
+                            )}
+
+                        </td>
+
+                        <td>
+
+                            <strong>
+                                ${
+                                    squadra.numero_operai ||
+                                    0
+                                }
+                            </strong>
+
+                        </td>
+
+                        <td>
+
+                            <span
+                                class="status ${classe}"
+                            >
+
+                                ${escapeHtml(
+                                    squadra.stato ||
+                                    "Attiva"
+                                )}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <button
+                                class="action-button people"
+                                onclick="apriOperai(
+                                    ${squadra.id}
+                                )"
+                            >
+                                Operai
+                            </button>
+
+                            <button
+                                class="action-button edit"
+                                onclick="modificaSquadra(
+                                    ${squadra.id}
+                                )"
+                            >
+                                Modifica
+                            </button>
+
+                            <button
+                                class="action-button delete"
+                                onclick="eliminaSquadra(
+                                    ${squadra.id}
+                                )"
+                            >
+                                Elimina
+                            </button>
+
+                        </td>
+
+                    `;
+
+
+                    tbody.appendChild(
+                        riga
+                    );
+                }
+            );
         }
 
 
         aggiornaStatistiche();
-
     }
 
 
@@ -954,37 +1784,75 @@
 
         const attive =
             squadre.filter(
-                item => item.stato === "Attiva"
+                squadra =>
+                    squadra.stato ===
+                    "Attiva"
             ).length;
 
 
-        const inattive =
-            squadre.filter(
-                item => item.stato === "Non attiva"
-            ).length;
+        const assegnati =
+            squadre.reduce(
+                (
+                    totale,
+                    squadra
+                ) =>
+                    totale +
+                    Number(
+                        squadra.numero_operai ||
+                        0
+                    ),
+                0
+            );
 
 
-        document.getElementById("totaleSquadre")
-            .textContent = totale;
+        document
+            .getElementById(
+                "totaleSquadre"
+            )
+            .textContent =
+            totale;
 
-        document.getElementById("squadreAttive")
-            .textContent = attive;
 
-        document.getElementById("squadreInattive")
-            .textContent = inattive;
+        document
+            .getElementById(
+                "squadreAttive"
+            )
+            .textContent =
+            attive;
 
+
+        document
+            .getElementById(
+                "totaleAssegnati"
+            )
+            .textContent =
+            assegnati;
     }
 
 
     function escapeHtml(testo) {
 
         return String(testo)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#039;"
+            );
     }
 
 
@@ -992,21 +1860,40 @@
         "click",
         function(event) {
 
-            const modal =
-                document.getElementById("modalSquadra");
+            const modalSquadra =
+                document.getElementById(
+                    "modalSquadra"
+                );
 
 
-            if (event.target === modal) {
+            const modalOperai =
+                document.getElementById(
+                    "modalOperai"
+                );
+
+
+            if (
+                event.target ===
+                modalSquadra
+            ) {
 
                 chiudiModal();
+            }
 
+
+            if (
+                event.target ===
+                modalOperai
+            ) {
+
+                chiudiOperai();
             }
 
         }
     );
 
 
-    mostraSquadre();
+    caricaDati();
 
 </script>
 

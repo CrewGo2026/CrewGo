@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>CrewGo - Ore lavorate</title>
+    <title>CrewGo - Ore Lavorate</title>
 
     <style>
         * {
@@ -55,7 +54,7 @@
         }
 
         main {
-            max-width: 1300px;
+            max-width: 1400px;
             margin: auto;
             padding: 30px;
         }
@@ -125,7 +124,7 @@
 
         .filters {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1.2fr 1fr 1fr;
             gap: 15px;
             margin-bottom: 20px;
         }
@@ -150,7 +149,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 1150px;
+            min-width: 1100px;
         }
 
         th {
@@ -170,32 +169,12 @@
             font-weight: bold;
         }
 
+        .hours {
+            font-weight: bold;
+        }
+
         .overtime {
-            color: #b45309;
             font-weight: bold;
-        }
-
-        .normal {
-            color: #166534;
-            font-weight: bold;
-        }
-
-        .status {
-            display: inline-block;
-            padding: 6px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .ok {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .warning {
-            background: #fef3c7;
-            color: #92400e;
         }
 
         .action-button {
@@ -203,6 +182,7 @@
             padding: 7px 10px;
             border-radius: 7px;
             cursor: pointer;
+            margin-right: 5px;
             font-size: 12px;
             font-weight: bold;
         }
@@ -217,10 +197,20 @@
             color: #991b1b;
         }
 
-        .empty {
+        .empty,
+        .loading {
             text-align: center;
             padding: 50px 20px;
             color: #64748b;
+        }
+
+        .error {
+            display: none;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
         }
 
         .modal {
@@ -240,7 +230,7 @@
 
         .modal-box {
             width: 100%;
-            max-width: 650px;
+            max-width: 750px;
             background: white;
             border-radius: 18px;
             padding: 30px;
@@ -289,13 +279,19 @@
         }
 
         input,
-        select {
+        select,
+        textarea {
             width: 100%;
             padding: 12px;
             border: 1px solid #cbd5e1;
             border-radius: 9px;
             font-size: 15px;
             background: white;
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
         }
 
         .form-actions {
@@ -380,18 +376,24 @@
     </a>
 
 
+    <div id="errore" class="error"></div>
+
+
     <div class="top">
 
         <div>
             <h1>Ore lavorate</h1>
 
             <div class="subtitle">
-                Registra e controlla le ore giornaliere del personale.
+                Registra ore ordinarie, straordinari, operai, squadre e cantieri.
             </div>
         </div>
 
-        <button class="add-button" onclick="apriNuovaOra()">
-            + INSERISCI ORE
+        <button
+            class="add-button"
+            onclick="apriNuovaOra()"
+        >
+            + REGISTRA ORE
         </button>
 
     </div>
@@ -400,43 +402,66 @@
     <div class="stats">
 
         <div class="stat">
-            <div class="stat-number" id="totaleRegistrazioni">
+
+            <div
+                class="stat-number"
+                id="totaleRegistrazioni"
+            >
                 0
             </div>
 
             <div class="stat-label">
                 Registrazioni
             </div>
+
         </div>
 
+
         <div class="stat">
-            <div class="stat-number" id="totaleOre">
+
+            <div
+                class="stat-number"
+                id="totaleOrdinarie"
+            >
                 0
             </div>
 
             <div class="stat-label">
-                Ore totali
+                Ore ordinarie
             </div>
+
         </div>
 
+
         <div class="stat">
-            <div class="stat-number" id="totaleStraordinari">
+
+            <div
+                class="stat-number"
+                id="totaleStraordinarie"
+            >
                 0
             </div>
 
             <div class="stat-label">
-                Ore straordinarie
+                Straordinari
             </div>
+
         </div>
 
+
         <div class="stat">
-            <div class="stat-number" id="totaleAnomalie">
+
+            <div
+                class="stat-number"
+                id="totaleComplessive"
+            >
                 0
             </div>
 
             <div class="stat-label">
-                Anomalie
+                Ore complessive
             </div>
+
         </div>
 
     </div>
@@ -451,27 +476,23 @@
             oninput="mostraOre()"
         >
 
+
         <input
             id="filtroData"
             type="date"
             onchange="mostraOre()"
         >
 
+
         <select
-            id="filtroStato"
+            id="filtroCantiere"
             onchange="mostraOre()"
         >
+
             <option value="">
-                Tutti gli stati
+                Tutti i cantieri
             </option>
 
-            <option value="Regolare">
-                Regolari
-            </option>
-
-            <option value="Straordinario">
-                Straordinari
-            </option>
         </select>
 
     </div>
@@ -484,20 +505,35 @@
             <thead>
 
                 <tr>
+
                     <th>Data</th>
                     <th>Operaio</th>
                     <th>Squadra</th>
                     <th>Cantiere</th>
                     <th>Ordinarie</th>
-                    <th>Straordinarie</th>
+                    <th>Straordinari</th>
                     <th>Totale</th>
-                    <th>Stato</th>
                     <th>Azioni</th>
+
                 </tr>
 
             </thead>
 
+
             <tbody id="tabellaOre">
+
+                <tr>
+
+                    <td colspan="8">
+
+                        <div class="loading">
+                            Caricamento ore...
+                        </div>
+
+                    </td>
+
+                </tr>
+
             </tbody>
 
         </table>
@@ -507,17 +543,27 @@
 </main>
 
 
-<div class="modal" id="modalOre">
+<!-- =====================================================
+     MODALE ORE
+===================================================== -->
+
+<div
+    class="modal"
+    id="modalOre"
+>
 
     <div class="modal-box">
 
         <div class="modal-header">
 
             <h2 id="titoloModal">
-                Inserisci ore
+                Registra ore
             </h2>
 
-            <button class="close" onclick="chiudiModal()">
+            <button
+                class="close"
+                onclick="chiudiModal()"
+            >
                 ×
             </button>
 
@@ -526,7 +572,10 @@
 
         <form id="formOre">
 
-            <input type="hidden" id="oraId">
+            <input
+                type="hidden"
+                id="oreId"
+            >
 
 
             <div class="form-grid">
@@ -534,7 +583,7 @@
                 <div class="form-group">
 
                     <label for="data">
-                        Data
+                        Data *
                     </label>
 
                     <input
@@ -549,15 +598,19 @@
                 <div class="form-group">
 
                     <label for="operaio">
-                        Operaio
+                        Operaio *
                     </label>
 
-                    <input
+                    <select
                         id="operaio"
-                        type="text"
-                        placeholder="Nome e cognome"
                         required
                     >
+
+                        <option value="">
+                            Seleziona operaio
+                        </option>
+
+                    </select>
 
                 </div>
 
@@ -568,11 +621,13 @@
                         Squadra
                     </label>
 
-                    <input
-                        id="squadra"
-                        type="text"
-                        placeholder="Es. Squadra Milano"
-                    >
+                    <select id="squadra">
+
+                        <option value="">
+                            Nessuna squadra
+                        </option>
+
+                    </select>
 
                 </div>
 
@@ -580,33 +635,35 @@
                 <div class="form-group">
 
                     <label for="cantiere">
-                        Cantiere
+                        Cantiere *
                     </label>
 
-                    <input
+                    <select
                         id="cantiere"
-                        type="text"
-                        placeholder="Es. Fiera Milano"
                         required
                     >
+
+                        <option value="">
+                            Seleziona cantiere
+                        </option>
+
+                    </select>
 
                 </div>
 
 
                 <div class="form-group">
 
-                    <label for="ordinarie">
+                    <label for="oreOrdinarie">
                         Ore ordinarie
                     </label>
 
                     <input
-                        id="ordinarie"
+                        id="oreOrdinarie"
                         type="number"
                         min="0"
-                        max="24"
                         step="0.5"
-                        value="8"
-                        required
+                        value="0"
                     >
 
                 </div>
@@ -614,15 +671,14 @@
 
                 <div class="form-group">
 
-                    <label for="straordinarie">
+                    <label for="oreStraordinarie">
                         Ore straordinarie
                     </label>
 
                     <input
-                        id="straordinarie"
+                        id="oreStraordinarie"
                         type="number"
                         min="0"
-                        max="24"
                         step="0.5"
                         value="0"
                     >
@@ -636,11 +692,10 @@
                         Note
                     </label>
 
-                    <input
+                    <textarea
                         id="note"
-                        type="text"
                         placeholder="Eventuali note..."
-                    >
+                    ></textarea>
 
                 </div>
 
@@ -675,22 +730,284 @@
 
 <script>
 
-    let registrazioni = JSON.parse(
-        localStorage.getItem("crewgo_ore") || "[]"
-    );
+    let registrazioni = [];
+
+    let operai = [];
+
+    let squadre = [];
+
+    let cantieri = [];
 
 
-    function generaId() {
-        return Date.now().toString();
+    function mostraErrore(messaggio) {
+
+        const box =
+            document.getElementById("errore");
+
+        box.textContent =
+            messaggio;
+
+        box.style.display =
+            "block";
+
     }
 
 
-    function salvaDati() {
+    function nascondiErrore() {
 
-        localStorage.setItem(
-            "crewgo_ore",
-            JSON.stringify(registrazioni)
-        );
+        document
+            .getElementById("errore")
+            .style.display =
+            "none";
+
+    }
+
+
+    async function caricaTutto() {
+
+        try {
+
+            nascondiErrore();
+
+
+            const datiRisposta =
+                await fetch(
+                    "/api/dati-collegamento"
+                );
+
+
+            if (!datiRisposta.ok) {
+
+                throw new Error(
+                    "Impossibile caricare operai, squadre e cantieri."
+                );
+
+            }
+
+
+            const dati =
+                await datiRisposta.json();
+
+
+            operai =
+                dati.operai || [];
+
+
+            cantieri =
+                dati.cantieri || [];
+
+
+            squadre =
+                dati.squadre || [];
+
+
+            riempiSelect();
+
+
+            await caricaOre();
+
+        } catch (errore) {
+
+            mostraErrore(
+                errore.message
+            );
+
+        }
+
+    }
+
+
+    async function caricaOre() {
+
+        const risposta =
+            await fetch(
+                "/api/ore"
+            );
+
+
+        if (!risposta.ok) {
+
+            const risultato =
+                await risposta.json()
+                .catch(() => ({}));
+
+
+            throw new Error(
+                risultato.errore ||
+                "Impossibile caricare le ore."
+            );
+
+        }
+
+
+        registrazioni =
+            await risposta.json();
+
+
+        mostraOre();
+
+    }
+
+
+    function riempiSelect() {
+
+        const operaioSelect =
+            document.getElementById(
+                "operaio"
+            );
+
+
+        const squadraSelect =
+            document.getElementById(
+                "squadra"
+            );
+
+
+        const cantiereSelect =
+            document.getElementById(
+                "cantiere"
+            );
+
+
+        const filtroCantiere =
+            document.getElementById(
+                "filtroCantiere"
+            );
+
+
+        operaioSelect.innerHTML = `
+            <option value="">
+                Seleziona operaio
+            </option>
+        `;
+
+
+        squadraSelect.innerHTML = `
+            <option value="">
+                Nessuna squadra
+            </option>
+        `;
+
+
+        cantiereSelect.innerHTML = `
+            <option value="">
+                Seleziona cantiere
+            </option>
+        `;
+
+
+        filtroCantiere.innerHTML = `
+            <option value="">
+                Tutti i cantieri
+            </option>
+        `;
+
+
+        operai
+            .filter(
+                operaio =>
+                    operaio.stato === "Attivo"
+            )
+            .forEach(operaio => {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+
+                option.value =
+                    operaio.id;
+
+
+                option.textContent =
+                    operaio.nome +
+                    " " +
+                    operaio.cognome;
+
+
+                operaioSelect.appendChild(
+                    option
+                );
+
+            });
+
+
+        squadre
+            .filter(
+                squadra =>
+                    squadra.stato === "Attiva"
+            )
+            .forEach(squadra => {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+
+                option.value =
+                    squadra.id;
+
+
+                option.textContent =
+                    squadra.nome;
+
+
+                squadraSelect.appendChild(
+                    option
+                );
+
+            });
+
+
+        cantieri
+            .filter(
+                cantiere =>
+                    cantiere.stato === "Attivo"
+            )
+            .forEach(cantiere => {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+
+                option.value =
+                    cantiere.id;
+
+
+                option.textContent =
+                    cantiere.nome +
+                    " — " +
+                    cantiere.citta;
+
+
+                cantiereSelect.appendChild(
+                    option
+                );
+
+
+                const filtroOption =
+                    document.createElement(
+                        "option"
+                    );
+
+
+                filtroOption.value =
+                    cantiere.id;
+
+
+                filtroOption.textContent =
+                    cantiere.nome;
+
+
+                filtroCantiere.appendChild(
+                    filtroOption
+                );
+
+            });
 
     }
 
@@ -701,27 +1018,36 @@
             .getElementById("formOre")
             .reset();
 
+
         document
-            .getElementById("oraId")
-            .value = "";
+            .getElementById("oreId")
+            .value =
+            "";
+
+
+        document
+            .getElementById("oreOrdinarie")
+            .value =
+            "0";
+
+
+        document
+            .getElementById("oreStraordinarie")
+            .value =
+            "0";
+
 
         document
             .getElementById("data")
-            .value = new Date()
-            .toISOString()
-            .split("T")[0];
+            .value =
+            oggi();
 
-        document
-            .getElementById("ordinarie")
-            .value = "8";
-
-        document
-            .getElementById("straordinarie")
-            .value = "0";
 
         document
             .getElementById("titoloModal")
-            .textContent = "Inserisci ore";
+            .textContent =
+            "Registra ore";
+
 
         document
             .getElementById("modalOre")
@@ -741,123 +1067,230 @@
 
     document
         .getElementById("formOre")
-        .addEventListener("submit", function(event) {
+        .addEventListener(
+            "submit",
+            async function(event) {
 
-            event.preventDefault();
+                event.preventDefault();
 
-
-            const id =
-                document.getElementById("oraId").value;
-
-
-            const ordinarie =
-                Number(
-                    document.getElementById("ordinarie").value
-                ) || 0;
+                nascondiErrore();
 
 
-            const straordinarie =
-                Number(
-                    document.getElementById("straordinarie").value
-                ) || 0;
+                const id =
+                    document
+                        .getElementById("oreId")
+                        .value;
 
 
-            const registrazione = {
+                const dati = {
 
-                id: id || generaId(),
+                    data:
+                        document
+                            .getElementById("data")
+                            .value,
 
-                data:
-                    document.getElementById("data").value,
+                    operaio_id:
+                        Number(
+                            document
+                                .getElementById("operaio")
+                                .value
+                        ),
 
-                operaio:
-                    document.getElementById("operaio").value.trim(),
+                    squadra_id:
+                        document
+                            .getElementById("squadra")
+                            .value
+                            ? Number(
+                                document
+                                    .getElementById("squadra")
+                                    .value
+                              )
+                            : null,
 
-                squadra:
-                    document.getElementById("squadra").value.trim(),
+                    cantiere_id:
+                        Number(
+                            document
+                                .getElementById("cantiere")
+                                .value
+                        ),
 
-                cantiere:
-                    document.getElementById("cantiere").value.trim(),
+                    ore_ordinarie:
+                        Number(
+                            document
+                                .getElementById("oreOrdinarie")
+                                .value
+                        ),
 
-                ordinarie: ordinarie,
+                    ore_straordinarie:
+                        Number(
+                            document
+                                .getElementById("oreStraordinarie")
+                                .value
+                        ),
 
-                straordinarie: straordinarie,
+                    note:
+                        document
+                            .getElementById("note")
+                            .value
+                            .trim()
 
-                totale:
-                    ordinarie + straordinarie,
-
-                note:
-                    document.getElementById("note").value.trim()
-
-            };
+                };
 
 
-            if (id) {
+                if (
+                    !dati.operaio_id ||
+                    !dati.cantiere_id
+                ) {
 
-                const indice =
-                    registrazioni.findIndex(
-                        item => item.id === id
+                    mostraErrore(
+                        "Seleziona operaio e cantiere."
                     );
 
-                if (indice !== -1) {
-                    registrazioni[indice] = registrazione;
+                    return;
+
                 }
 
-            } else {
 
-                registrazioni.push(registrazione);
+                try {
+
+                    let risposta;
+
+
+                    if (id) {
+
+                        risposta =
+                            await fetch(
+                                `/api/ore/${id}`,
+                                {
+                                    method: "PUT",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+
+                                    body:
+                                        JSON.stringify(dati)
+                                }
+                            );
+
+                    } else {
+
+                        risposta =
+                            await fetch(
+                                "/api/ore",
+                                {
+                                    method: "POST",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+
+                                    body:
+                                        JSON.stringify(dati)
+                                }
+                            );
+
+                    }
+
+
+                    const risultato =
+                        await risposta.json();
+
+
+                    if (!risposta.ok) {
+
+                        throw new Error(
+                            risultato.errore ||
+                            "Errore durante il salvataggio delle ore."
+                        );
+
+                    }
+
+
+                    chiudiModal();
+
+                    await caricaTutto();
+
+                } catch (errore) {
+
+                    mostraErrore(
+                        errore.message
+                    );
+
+                }
 
             }
-
-
-            salvaDati();
-
-            mostraOre();
-
-            chiudiModal();
-
-        });
+        );
 
 
     function modificaOre(id) {
 
-        const item =
+        const record =
             registrazioni.find(
-                record => record.id === id
+                item =>
+                    item.id === id
             );
 
 
-        if (!item) {
+        if (!record) {
             return;
         }
 
 
-        document.getElementById("oraId").value =
-            item.id;
-
-        document.getElementById("data").value =
-            item.data;
-
-        document.getElementById("operaio").value =
-            item.operaio;
-
-        document.getElementById("squadra").value =
-            item.squadra;
-
-        document.getElementById("cantiere").value =
-            item.cantiere;
-
-        document.getElementById("ordinarie").value =
-            item.ordinarie;
-
-        document.getElementById("straordinarie").value =
-            item.straordinarie;
-
-        document.getElementById("note").value =
-            item.note;
+        document
+            .getElementById("oreId")
+            .value =
+            record.id;
 
 
-        document.getElementById("titoloModal")
-            .textContent = "Modifica registrazione";
+        document
+            .getElementById("data")
+            .value =
+            record.data || "";
+
+
+        document
+            .getElementById("operaio")
+            .value =
+            record.operaio_id || "";
+
+
+        document
+            .getElementById("squadra")
+            .value =
+            record.squadra_id || "";
+
+
+        document
+            .getElementById("cantiere")
+            .value =
+            record.cantiere_id || "";
+
+
+        document
+            .getElementById("oreOrdinarie")
+            .value =
+            record.ore_ordinarie || 0;
+
+
+        document
+            .getElementById("oreStraordinarie")
+            .value =
+            record.ore_straordinarie || 0;
+
+
+        document
+            .getElementById("note")
+            .value =
+            record.note || "";
+
+
+        document
+            .getElementById("titoloModal")
+            .textContent =
+            "Modifica ore";
 
 
         document
@@ -867,7 +1300,7 @@
     }
 
 
-    function eliminaOre(id) {
+    async function eliminaOre(id) {
 
         if (!confirm(
             "Sei sicuro di voler eliminare questa registrazione?"
@@ -876,15 +1309,40 @@
         }
 
 
-        registrazioni =
-            registrazioni.filter(
-                item => item.id !== id
+        try {
+
+            const risposta =
+                await fetch(
+                    `/api/ore/${id}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+
+            const risultato =
+                await risposta.json();
+
+
+            if (!risposta.ok) {
+
+                throw new Error(
+                    risultato.errore ||
+                    "Errore durante l'eliminazione."
+                );
+
+            }
+
+
+            await caricaTutto();
+
+        } catch (errore) {
+
+            mostraErrore(
+                errore.message
             );
 
-
-        salvaDati();
-
-        mostraOre();
+        }
 
     }
 
@@ -892,61 +1350,78 @@
     function mostraOre() {
 
         const tbody =
-            document.getElementById("tabellaOre");
+            document.getElementById(
+                "tabellaOre"
+            );
+
 
         const ricerca =
             document
-                .getElementById("ricerca")
+                .getElementById(
+                    "ricerca"
+                )
                 .value
                 .toLowerCase()
                 .trim();
 
+
         const filtroData =
             document
-                .getElementById("filtroData")
+                .getElementById(
+                    "filtroData"
+                )
                 .value;
 
-        const filtroStato =
+
+        const filtroCantiere =
             document
-                .getElementById("filtroStato")
+                .getElementById(
+                    "filtroCantiere"
+                )
                 .value;
 
 
         const filtrate =
-            registrazioni.filter(item => {
+            registrazioni.filter(record => {
 
                 const testo = (
 
-                    item.operaio + " " +
-                    item.squadra + " " +
-                    item.cantiere
+                    (record.operaio_nome || "") +
+                    " " +
+                    (record.operaio_cognome || "") +
+                    " " +
+                    (record.squadra_nome || "") +
+                    " " +
+                    (record.cantiere_nome || "")
 
                 ).toLowerCase();
 
 
                 const ricercaOK =
-                    testo.includes(ricerca);
+                    testo.includes(
+                        ricerca
+                    );
 
 
                 const dataOK =
                     !filtroData ||
-                    item.data === filtroData;
+                    record.data === filtroData;
 
 
-                const stato =
-                    item.straordinarie > 0
-                    ? "Straordinario"
-                    : "Regolare";
+                const cantiereOK =
+                    !filtroCantiere ||
+                    String(
+                        record.cantiere_id
+                    ) === String(
+                        filtroCantiere
+                    );
 
 
-                const statoOK =
-                    !filtroStato ||
-                    stato === filtroStato;
-
-
-                return ricercaOK &&
-                       dataOK &&
-                       statoOK;
+                return (
+                    ricercaOK &&
+                    dataOK &&
+                    cantiereOK
+                );
 
             });
 
@@ -958,92 +1433,110 @@
 
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="9">
+
+                    <td colspan="8">
+
                         <div class="empty">
                             ${
                                 registrazioni.length === 0
-                                ? "Nessuna registrazione di ore."
+                                ? "Nessuna registrazione presente nel database."
                                 : "Nessun risultato trovato."
                             }
                         </div>
+
                     </td>
+
                 </tr>
             `;
 
         } else {
 
-            filtrate.forEach(item => {
+            filtrate.forEach(record => {
 
                 const riga =
-                    document.createElement("tr");
+                    document.createElement(
+                        "tr"
+                    );
 
 
-                const straordinario =
-                    item.straordinarie > 0;
+                const ordinarie =
+                    Number(
+                        record.ore_ordinarie || 0
+                    );
 
 
-                const classe =
-                    straordinario
-                    ? "warning"
-                    : "ok";
+                const straordinarie =
+                    Number(
+                        record.ore_straordinarie || 0
+                    );
 
 
-                const stato =
-                    straordinario
-                    ? "Straordinario"
-                    : "Regolare";
+                const totale =
+                    ordinarie +
+                    straordinarie;
 
 
                 riga.innerHTML = `
 
                     <td>
-                        ${formattaData(item.data)}
+                        ${formattaData(
+                            record.data
+                        )}
                     </td>
 
                     <td class="name">
-                        ${escapeHtml(item.operaio)}
+                        ${escapeHtml(
+                            record.operaio_nome || ""
+                        )}
+                        ${escapeHtml(
+                            record.operaio_cognome || ""
+                        )}
                     </td>
 
                     <td>
-                        ${escapeHtml(item.squadra || "—")}
+                        ${escapeHtml(
+                            record.squadra_nome ||
+                            "—"
+                        )}
                     </td>
 
                     <td>
-                        ${escapeHtml(item.cantiere)}
+                        ${escapeHtml(
+                            record.cantiere_nome ||
+                            "—"
+                        )}
                     </td>
 
-                    <td class="normal">
-                        ${item.ordinarie.toFixed(1)} h
+                    <td class="hours">
+                        ${formattaOre(
+                            ordinarie
+                        )} h
                     </td>
 
                     <td class="overtime">
-                        ${item.straordinarie.toFixed(1)} h
+                        ${formattaOre(
+                            straordinarie
+                        )} h
                     </td>
 
-                    <td>
-                        <strong>
-                            ${item.totale.toFixed(1)} h
-                        </strong>
-                    </td>
-
-                    <td>
-                        <span class="status ${classe}">
-                            ${stato}
-                        </span>
+                    <td class="hours">
+                        ${formattaOre(
+                            totale
+                        )} h
                     </td>
 
                     <td>
 
                         <button
                             class="action-button edit"
-                            onclick="modificaOre('${item.id}')"
+                            onclick="modificaOre(${record.id})"
                         >
                             Modifica
                         </button>
 
                         <button
                             class="action-button delete"
-                            onclick="eliminaOre('${item.id}')"
+                            onclick="eliminaOre(${record.id})"
                         >
                             Elimina
                         </button>
@@ -1053,7 +1546,9 @@
                 `;
 
 
-                tbody.appendChild(riga);
+                tbody.appendChild(
+                    riga
+                );
 
             });
 
@@ -1067,43 +1562,105 @@
 
     function aggiornaStatistiche() {
 
-        const totaleRegistrazioni =
+        const totale =
             registrazioni.length;
 
 
-        const totaleOre =
+        const ordinarie =
             registrazioni.reduce(
-                (somma, item) =>
-                    somma + item.totale,
+                (
+                    somma,
+                    record
+                ) =>
+                    somma +
+                    Number(
+                        record.ore_ordinarie || 0
+                    ),
                 0
             );
 
 
-        const totaleStraordinari =
+        const straordinarie =
             registrazioni.reduce(
-                (somma, item) =>
-                    somma + item.straordinarie,
+                (
+                    somma,
+                    record
+                ) =>
+                    somma +
+                    Number(
+                        record.ore_straordinarie || 0
+                    ),
                 0
             );
 
 
-        const totaleAnomalie =
-            registrazioni.filter(
-                item => item.totale > 10
-            ).length;
+        const complessive =
+            ordinarie +
+            straordinarie;
 
 
-        document.getElementById("totaleRegistrazioni")
-            .textContent = totaleRegistrazioni;
+        document
+            .getElementById(
+                "totaleRegistrazioni"
+            )
+            .textContent =
+            totale;
 
-        document.getElementById("totaleOre")
-            .textContent = totaleOre.toFixed(1);
 
-        document.getElementById("totaleStraordinari")
-            .textContent = totaleStraordinari.toFixed(1);
+        document
+            .getElementById(
+                "totaleOrdinarie"
+            )
+            .textContent =
+            formattaOre(
+                ordinarie
+            );
 
-        document.getElementById("totaleAnomalie")
-            .textContent = totaleAnomalie;
+
+        document
+            .getElementById(
+                "totaleStraordinarie"
+            )
+            .textContent =
+            formattaOre(
+                straordinarie
+            );
+
+
+        document
+            .getElementById(
+                "totaleComplessive"
+            )
+            .textContent =
+            formattaOre(
+                complessive
+            );
+
+    }
+
+
+    function formattaOre(valore) {
+
+        const numero =
+            Number(valore || 0);
+
+
+        if (
+            Number.isInteger(
+                numero
+            )
+        ) {
+
+            return String(
+                numero
+            );
+
+        }
+
+
+        return numero
+            .toFixed(2)
+            .replace(".", ",");
 
     }
 
@@ -1114,15 +1671,62 @@
             return "—";
         }
 
-        const parti = data.split("-");
+
+        const parti =
+            data.split("-");
+
 
         if (parti.length !== 3) {
             return data;
         }
 
-        return parti[2] + "/" +
-               parti[1] + "/" +
-               parti[0];
+
+        return (
+            parti[2] +
+            "/" +
+            parti[1] +
+            "/" +
+            parti[0]
+        );
+
+    }
+
+
+    function oggi() {
+
+        const data =
+            new Date();
+
+
+        const anno =
+            data.getFullYear();
+
+
+        const mese =
+            String(
+                data.getMonth() + 1
+            ).padStart(
+                2,
+                "0"
+            );
+
+
+        const giorno =
+            String(
+                data.getDate()
+            ).padStart(
+                2,
+                "0"
+            );
+
+
+        return (
+            anno +
+            "-" +
+            mese +
+            "-" +
+            giorno
+        );
 
     }
 
@@ -1130,11 +1734,26 @@
     function escapeHtml(testo) {
 
         return String(testo)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#039;"
+            );
 
     }
 
@@ -1144,17 +1763,24 @@
         function(event) {
 
             const modal =
-                document.getElementById("modalOre");
+                document.getElementById(
+                    "modalOre"
+                );
 
-            if (event.target === modal) {
+
+            if (
+                event.target === modal
+            ) {
+
                 chiudiModal();
+
             }
 
         }
     );
 
 
-    mostraOre();
+    caricaTutto();
 
 </script>
 

@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>CrewGo - Cantieri</title>
 
     <style>
@@ -55,7 +54,7 @@
         }
 
         main {
-            max-width: 1250px;
+            max-width: 1300px;
             margin: auto;
             padding: 30px;
         }
@@ -123,14 +122,21 @@
             color: #64748b;
         }
 
-        .search {
+        .filters {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filters input,
+        .filters select {
             width: 100%;
-            padding: 14px;
+            padding: 13px;
             border: 1px solid #cbd5e1;
             border-radius: 10px;
-            font-size: 16px;
-            margin-bottom: 20px;
             background: white;
+            font-size: 15px;
         }
 
         .table-box {
@@ -176,14 +182,9 @@
             color: #166534;
         }
 
-        .suspended {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .completed {
-            background: #e2e8f0;
-            color: #475569;
+        .closed {
+            background: #fee2e2;
+            color: #991b1b;
         }
 
         .action-button {
@@ -206,10 +207,20 @@
             color: #991b1b;
         }
 
-        .empty {
+        .empty,
+        .loading {
             text-align: center;
             padding: 50px 20px;
             color: #64748b;
+        }
+
+        .error {
+            display: none;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
         }
 
         .modal {
@@ -229,7 +240,7 @@
 
         .modal-box {
             width: 100%;
-            max-width: 650px;
+            max-width: 750px;
             background: white;
             border-radius: 18px;
             padding: 30px;
@@ -315,13 +326,16 @@
         }
 
         @media (max-width: 700px) {
-
             .top {
                 flex-direction: column;
                 align-items: flex-start;
             }
 
             .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
                 grid-template-columns: 1fr;
             }
 
@@ -366,13 +380,16 @@
     </a>
 
 
+    <div id="errore" class="error"></div>
+
+
     <div class="top">
 
         <div>
             <h1>Cantieri</h1>
 
             <div class="subtitle">
-                Gestisci cantieri, clienti, squadre e stato dei lavori.
+                Gestisci cantieri, clienti, indirizzi, date e stato.
             </div>
         </div>
 
@@ -408,25 +425,46 @@
 
 
         <div class="stat">
-            <div class="stat-number" id="cantieriConclusi">
+            <div class="stat-number" id="cantieriChiusi">
                 0
             </div>
 
             <div class="stat-label">
-                Cantieri conclusi
+                Cantieri non attivi
             </div>
         </div>
 
     </div>
 
 
-    <input
-        class="search"
-        id="ricerca"
-        type="text"
-        placeholder="🔍 Cerca per cantiere, cliente, città o caposquadra..."
-        oninput="mostraCantieri()"
-    >
+    <div class="filters">
+
+        <input
+            id="ricerca"
+            type="text"
+            placeholder="🔍 Cerca cantiere, cliente, città..."
+            oninput="mostraCantieri()"
+        >
+
+        <select
+            id="filtroStato"
+            onchange="mostraCantieri()"
+        >
+            <option value="">
+                Tutti gli stati
+            </option>
+
+            <option value="Attivo">
+                Attivi
+            </option>
+
+            <option value="Non attivo">
+                Non attivi
+            </option>
+
+        </select>
+
+    </div>
 
 
     <div class="table-box">
@@ -439,8 +477,8 @@
                     <th>Cantiere</th>
                     <th>Cliente</th>
                     <th>Località</th>
-                    <th>Inizio</th>
-                    <th>Fine prevista</th>
+                    <th>Indirizzo</th>
+                    <th>Periodo</th>
                     <th>Caposquadra</th>
                     <th>Stato</th>
                     <th>Azioni</th>
@@ -449,6 +487,15 @@
             </thead>
 
             <tbody id="tabellaCantieri">
+
+                <tr>
+                    <td colspan="8">
+                        <div class="loading">
+                            Caricamento cantieri...
+                        </div>
+                    </td>
+                </tr>
+
             </tbody>
 
         </table>
@@ -468,7 +515,10 @@
                 Aggiungi cantiere
             </h2>
 
-            <button class="close" onclick="chiudiModal()">
+            <button
+                class="close"
+                onclick="chiudiModal()"
+            >
                 ×
             </button>
 
@@ -477,21 +527,24 @@
 
         <form id="formCantiere">
 
-            <input type="hidden" id="cantiereId">
+            <input
+                type="hidden"
+                id="cantiereId"
+            >
 
 
             <div class="form-grid">
 
-                <div class="form-group full">
+                <div class="form-group">
 
                     <label for="nome">
-                        Nome cantiere
+                        Nome cantiere *
                     </label>
 
                     <input
                         id="nome"
                         type="text"
-                        placeholder="Es. Allestimento Fiera Milano"
+                        placeholder="Es. Fiera Milano"
                         required
                     >
 
@@ -501,7 +554,7 @@
                 <div class="form-group">
 
                     <label for="cliente">
-                        Cliente
+                        Cliente *
                     </label>
 
                     <input
@@ -517,7 +570,7 @@
                 <div class="form-group">
 
                     <label for="citta">
-                        Città
+                        Città *
                     </label>
 
                     <input
@@ -530,7 +583,7 @@
                 </div>
 
 
-                <div class="form-group full">
+                <div class="form-group">
 
                     <label for="indirizzo">
                         Indirizzo
@@ -539,7 +592,7 @@
                     <input
                         id="indirizzo"
                         type="text"
-                        placeholder="Via, numero civico..."
+                        placeholder="Via, numero civico"
                     >
 
                 </div>
@@ -547,14 +600,13 @@
 
                 <div class="form-group">
 
-                    <label for="inizio">
+                    <label for="dataInizio">
                         Data inizio
                     </label>
 
                     <input
-                        id="inizio"
+                        id="dataInizio"
                         type="date"
-                        required
                     >
 
                 </div>
@@ -562,12 +614,12 @@
 
                 <div class="form-group">
 
-                    <label for="fine">
-                        Fine prevista
+                    <label for="dataFine">
+                        Data fine
                     </label>
 
                     <input
-                        id="fine"
+                        id="dataFine"
                         type="date"
                     >
 
@@ -580,25 +632,11 @@
                         Caposquadra
                     </label>
 
-                    <select id="caposquadra">
-
-                        <option value="">
-                            Da assegnare
-                        </option>
-
-                        <option value="Caposquadra 1">
-                            Caposquadra 1
-                        </option>
-
-                        <option value="Caposquadra 2">
-                            Caposquadra 2
-                        </option>
-
-                        <option value="Caposquadra 3">
-                            Caposquadra 3
-                        </option>
-
-                    </select>
+                    <input
+                        id="caposquadra"
+                        type="text"
+                        placeholder="Nome caposquadra"
+                    >
 
                 </div>
 
@@ -615,12 +653,8 @@
                             Attivo
                         </option>
 
-                        <option value="Sospeso">
-                            Sospeso
-                        </option>
-
-                        <option value="Concluso">
-                            Concluso
+                        <option value="Non attivo">
+                            Non attivo
                         </option>
 
                     </select>
@@ -658,24 +692,62 @@
 
 <script>
 
-    let cantieri = JSON.parse(
-        localStorage.getItem("crewgo_cantieri") || "[]"
-    );
+    let cantieri = [];
 
 
-    function salvaDati() {
+    function mostraErrore(messaggio) {
 
-        localStorage.setItem(
-            "crewgo_cantieri",
-            JSON.stringify(cantieri)
-        );
+        const box =
+            document.getElementById("errore");
+
+        box.textContent = messaggio;
+
+        box.style.display = "block";
 
     }
 
 
-    function generaId() {
+    function nascondiErrore() {
 
-        return Date.now().toString();
+        document
+            .getElementById("errore")
+            .style.display = "none";
+
+    }
+
+
+    async function caricaCantieri() {
+
+        try {
+
+            nascondiErrore();
+
+            const risposta =
+                await fetch("/api/cantieri");
+
+
+            if (!risposta.ok) {
+
+                throw new Error(
+                    "Impossibile caricare i cantieri."
+                );
+
+            }
+
+
+            cantieri =
+                await risposta.json();
+
+
+            mostraCantieri();
+
+        } catch (errore) {
+
+            mostraErrore(
+                errore.message
+            );
+
+        }
 
     }
 
@@ -692,7 +764,8 @@
 
         document
             .getElementById("titoloModal")
-            .textContent = "Aggiungi cantiere";
+            .textContent =
+            "Aggiungi cantiere";
 
         document
             .getElementById("modalCantiere")
@@ -712,81 +785,151 @@
 
     document
         .getElementById("formCantiere")
-        .addEventListener("submit", function(event) {
+        .addEventListener(
+            "submit",
+            async function(event) {
 
-            event.preventDefault();
+                event.preventDefault();
 
-
-            const id =
-                document.getElementById("cantiereId").value;
-
-
-            const cantiere = {
-
-                id: id || generaId(),
-
-                nome:
-                    document.getElementById("nome").value.trim(),
-
-                cliente:
-                    document.getElementById("cliente").value.trim(),
-
-                citta:
-                    document.getElementById("citta").value.trim(),
-
-                indirizzo:
-                    document.getElementById("indirizzo").value.trim(),
-
-                inizio:
-                    document.getElementById("inizio").value,
-
-                fine:
-                    document.getElementById("fine").value,
-
-                caposquadra:
-                    document.getElementById("caposquadra").value,
-
-                stato:
-                    document.getElementById("stato").value
-
-            };
+                nascondiErrore();
 
 
-            if (id) {
+                const id =
+                    document
+                        .getElementById("cantiereId")
+                        .value;
 
-                const indice =
-                    cantieri.findIndex(
-                        item => item.id === id
+
+                const dati = {
+
+                    nome:
+                        document
+                            .getElementById("nome")
+                            .value
+                            .trim(),
+
+                    cliente:
+                        document
+                            .getElementById("cliente")
+                            .value
+                            .trim(),
+
+                    citta:
+                        document
+                            .getElementById("citta")
+                            .value
+                            .trim(),
+
+                    indirizzo:
+                        document
+                            .getElementById("indirizzo")
+                            .value
+                            .trim(),
+
+                    data_inizio:
+                        document
+                            .getElementById("dataInizio")
+                            .value,
+
+                    data_fine:
+                        document
+                            .getElementById("dataFine")
+                            .value,
+
+                    caposquadra:
+                        document
+                            .getElementById("caposquadra")
+                            .value
+                            .trim(),
+
+                    stato:
+                        document
+                            .getElementById("stato")
+                            .value
+
+                };
+
+
+                try {
+
+                    let risposta;
+
+
+                    if (id) {
+
+                        risposta =
+                            await fetch(
+                                `/api/cantieri/${id}`,
+                                {
+                                    method: "PUT",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+
+                                    body:
+                                        JSON.stringify(dati)
+                                }
+                            );
+
+                    } else {
+
+                        risposta =
+                            await fetch(
+                                "/api/cantieri",
+                                {
+                                    method: "POST",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+
+                                    body:
+                                        JSON.stringify(dati)
+                                }
+                            );
+
+                    }
+
+
+                    const risultato =
+                        await risposta.json();
+
+
+                    if (!risposta.ok) {
+
+                        throw new Error(
+                            risultato.errore ||
+                            "Errore durante il salvataggio."
+                        );
+
+                    }
+
+
+                    chiudiModal();
+
+                    await caricaCantieri();
+
+                } catch (errore) {
+
+                    mostraErrore(
+                        errore.message
                     );
-
-
-                if (indice !== -1) {
-
-                    cantieri[indice] = cantiere;
 
                 }
 
-            } else {
-
-                cantieri.push(cantiere);
-
             }
-
-
-            salvaDati();
-
-            mostraCantieri();
-
-            chiudiModal();
-
-        });
+        );
 
 
     function modificaCantiere(id) {
 
         const cantiere =
             cantieri.find(
-                item => item.id === id
+                item =>
+                    item.id === id
             );
 
 
@@ -795,35 +938,63 @@
         }
 
 
-        document.getElementById("cantiereId").value =
+        document
+            .getElementById("cantiereId")
+            .value =
             cantiere.id;
 
-        document.getElementById("nome").value =
-            cantiere.nome;
 
-        document.getElementById("cliente").value =
-            cantiere.cliente;
-
-        document.getElementById("citta").value =
-            cantiere.citta;
-
-        document.getElementById("indirizzo").value =
-            cantiere.indirizzo;
-
-        document.getElementById("inizio").value =
-            cantiere.inizio;
-
-        document.getElementById("fine").value =
-            cantiere.fine;
-
-        document.getElementById("caposquadra").value =
-            cantiere.caposquadra;
-
-        document.getElementById("stato").value =
-            cantiere.stato;
+        document
+            .getElementById("nome")
+            .value =
+            cantiere.nome || "";
 
 
-        document.getElementById("titoloModal").textContent =
+        document
+            .getElementById("cliente")
+            .value =
+            cantiere.cliente || "";
+
+
+        document
+            .getElementById("citta")
+            .value =
+            cantiere.citta || "";
+
+
+        document
+            .getElementById("indirizzo")
+            .value =
+            cantiere.indirizzo || "";
+
+
+        document
+            .getElementById("dataInizio")
+            .value =
+            cantiere.data_inizio || "";
+
+
+        document
+            .getElementById("dataFine")
+            .value =
+            cantiere.data_fine || "";
+
+
+        document
+            .getElementById("caposquadra")
+            .value =
+            cantiere.caposquadra || "";
+
+
+        document
+            .getElementById("stato")
+            .value =
+            cantiere.stato || "Attivo";
+
+
+        document
+            .getElementById("titoloModal")
+            .textContent =
             "Modifica cantiere";
 
 
@@ -834,28 +1005,49 @@
     }
 
 
-    function eliminaCantiere(id) {
+    async function eliminaCantiere(id) {
 
-        const conferma =
-            confirm(
-                "Sei sicuro di voler eliminare questo cantiere?"
-            );
-
-
-        if (!conferma) {
+        if (!confirm(
+            "Sei sicuro di voler eliminare questo cantiere?"
+        )) {
             return;
         }
 
 
-        cantieri =
-            cantieri.filter(
-                item => item.id !== id
+        try {
+
+            const risposta =
+                await fetch(
+                    `/api/cantieri/${id}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+
+            const risultato =
+                await risposta.json();
+
+
+            if (!risposta.ok) {
+
+                throw new Error(
+                    risultato.errore ||
+                    "Errore durante l'eliminazione."
+                );
+
+            }
+
+
+            await caricaCantieri();
+
+        } catch (errore) {
+
+            mostraErrore(
+                errore.message
             );
 
-
-        salvaDati();
-
-        mostraCantieri();
+        }
 
     }
 
@@ -863,7 +1055,9 @@
     function mostraCantieri() {
 
         const tbody =
-            document.getElementById("tabellaCantieri");
+            document
+                .getElementById("tabellaCantieri");
+
 
         const ricerca =
             document
@@ -871,6 +1065,12 @@
                 .value
                 .toLowerCase()
                 .trim();
+
+
+        const filtroStato =
+            document
+                .getElementById("filtroStato")
+                .value;
 
 
         const filtrati =
@@ -881,12 +1081,23 @@
                     cantiere.nome + " " +
                     cantiere.cliente + " " +
                     cantiere.citta + " " +
-                    cantiere.caposquadra
+                    (cantiere.indirizzo || "") + " " +
+                    (cantiere.caposquadra || "")
 
                 ).toLowerCase();
 
 
-                return testo.includes(ricerca);
+                const ricercaOK =
+                    testo.includes(ricerca);
+
+
+                const statoOK =
+                    !filtroStato ||
+                    cantiere.stato === filtroStato;
+
+
+                return ricercaOK &&
+                       statoOK;
 
             });
 
@@ -902,7 +1113,7 @@
                         <div class="empty">
                             ${
                                 cantieri.length === 0
-                                ? "Nessun cantiere inserito."
+                                ? "Nessun cantiere presente nel database."
                                 : "Nessun risultato trovato."
                             }
                         </div>
@@ -918,48 +1129,61 @@
                     document.createElement("tr");
 
 
-                let classeStato = "active";
-
-
-                if (cantiere.stato === "Sospeso") {
-                    classeStato = "suspended";
-                }
-
-
-                if (cantiere.stato === "Concluso") {
-                    classeStato = "completed";
-                }
+                const classeStato =
+                    cantiere.stato === "Attivo"
+                    ? "active"
+                    : "closed";
 
 
                 riga.innerHTML = `
 
                     <td class="name">
-                        ${escapeHtml(cantiere.nome)}
+                        ${escapeHtml(
+                            cantiere.nome
+                        )}
                     </td>
 
                     <td>
-                        ${escapeHtml(cantiere.cliente)}
+                        ${escapeHtml(
+                            cantiere.cliente
+                        )}
                     </td>
 
                     <td>
-                        ${escapeHtml(cantiere.citta)}
+                        ${escapeHtml(
+                            cantiere.citta
+                        )}
                     </td>
 
                     <td>
-                        ${cantiere.inizio || "—"}
+                        ${escapeHtml(
+                            cantiere.indirizzo || "—"
+                        )}
                     </td>
 
                     <td>
-                        ${cantiere.fine || "—"}
+                        ${formattaData(
+                            cantiere.data_inizio
+                        )}
+                        →
+                        ${formattaData(
+                            cantiere.data_fine
+                        )}
                     </td>
 
                     <td>
-                        ${escapeHtml(cantiere.caposquadra || "Da assegnare")}
+                        ${escapeHtml(
+                            cantiere.caposquadra || "—"
+                        )}
                     </td>
 
                     <td>
-                        <span class="status ${classeStato}">
-                            ${escapeHtml(cantiere.stato)}
+                        <span
+                            class="status ${classeStato}"
+                        >
+                            ${escapeHtml(
+                                cantiere.stato || "Attivo"
+                            )}
                         </span>
                     </td>
 
@@ -967,14 +1191,14 @@
 
                         <button
                             class="action-button edit"
-                            onclick="modificaCantiere('${cantiere.id}')"
+                            onclick="modificaCantiere(${cantiere.id})"
                         >
                             Modifica
                         </button>
 
                         <button
                             class="action-button delete"
-                            onclick="eliminaCantiere('${cantiere.id}')"
+                            onclick="eliminaCantiere(${cantiere.id})"
                         >
                             Elimina
                         </button>
@@ -1004,24 +1228,61 @@
 
         const attivi =
             cantieri.filter(
-                item => item.stato === "Attivo"
+                cantiere =>
+                    cantiere.stato === "Attivo"
             ).length;
 
 
-        const conclusi =
+        const nonAttivi =
             cantieri.filter(
-                item => item.stato === "Concluso"
+                cantiere =>
+                    cantiere.stato !== "Attivo"
             ).length;
 
 
-        document.getElementById("totaleCantieri")
-            .textContent = totale;
+        document
+            .getElementById("totaleCantieri")
+            .textContent =
+            totale;
 
-        document.getElementById("cantieriAttivi")
-            .textContent = attivi;
 
-        document.getElementById("cantieriConclusi")
-            .textContent = conclusi;
+        document
+            .getElementById("cantieriAttivi")
+            .textContent =
+            attivi;
+
+
+        document
+            .getElementById("cantieriChiusi")
+            .textContent =
+            nonAttivi;
+
+    }
+
+
+    function formattaData(data) {
+
+        if (!data) {
+            return "—";
+        }
+
+
+        const parti =
+            data.split("-");
+
+
+        if (parti.length !== 3) {
+            return data;
+        }
+
+
+        return (
+            parti[2] +
+            "/" +
+            parti[1] +
+            "/" +
+            parti[0]
+        );
 
     }
 
@@ -1043,20 +1304,20 @@
         function(event) {
 
             const modal =
-                document.getElementById("modalCantiere");
+                document.getElementById(
+                    "modalCantiere"
+                );
 
 
             if (event.target === modal) {
-
                 chiudiModal();
-
             }
 
         }
     );
 
 
-    mostraCantieri();
+    caricaCantieri();
 
 </script>
 
