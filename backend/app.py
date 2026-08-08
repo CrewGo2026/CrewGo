@@ -65,6 +65,14 @@ def squadre():
     return send_from_directory("../frontend", "squadre.html")
 
 
+@app.route("/ore")
+def ore():
+    if "utente" not in session:
+        return redirect("/")
+
+    return send_from_directory("../frontend", "ore.html")
+
+
 @app.route("/logout")
 def logout():
     session.clear()
