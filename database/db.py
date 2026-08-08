@@ -7,7 +7,6 @@ from pathlib import Path
 # ==========================================================
 
 BASE_DIR = Path(__file__).resolve().parent
-
 DATABASE_FILE = BASE_DIR / "crewgo.db"
 
 
@@ -16,14 +15,10 @@ DATABASE_FILE = BASE_DIR / "crewgo.db"
 # ==========================================================
 
 def get_connection():
-
     """
     Apre una connessione al database CrewGo.
     """
-
-    conn = sqlite3.connect(
-        DATABASE_FILE
-    )
+    conn = sqlite3.connect(DATABASE_FILE)
 
     conn.row_factory = sqlite3.Row
 
@@ -35,11 +30,9 @@ def get_connection():
 # ==========================================================
 
 def inizializza_database():
-
     """
     Crea tutte le tabelle necessarie a CrewGo
-    e aggiorna automaticamente la struttura
-    delle tabelle già esistenti.
+    se non esistono già.
     """
 
     conn = get_connection()
@@ -112,11 +105,8 @@ def inizializza_database():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nome TEXT NOT NULL,
             caposquadra TEXT,
-            caposquadra_id INTEGER,
             cantiere_id INTEGER,
             stato TEXT DEFAULT 'Attiva',
-            FOREIGN KEY (caposquadra_id)
-                REFERENCES operai(id),
             FOREIGN KEY (cantiere_id)
                 REFERENCES cantieri(id)
         )
@@ -148,114 +138,44 @@ def inizializza_database():
 
 
     # ======================================================
-    # MIGRAZIONE SQUADRE ESISTENTI
+    # MEZZI E ATTREZZATURE
     # ======================================================
-
-    # Controlliamo se la vecchia tabella squadre
-    # possiede già caposquadra_id.
 
     cursor.execute("""
-        PRAGMA table_info(squadre)
+        CREATE TABLE IF NOT EXISTS mezzi (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            nome TEXT NOT NULL,
+
+            categoria TEXT DEFAULT 'Mezzo',
+
+            marca TEXT,
+
+            modello TEXT,
+
+            targa TEXT,
+
+            matricola TEXT,
+
+            stato TEXT DEFAULT 'Disponibile',
+
+            cantiere_id INTEGER,
+
+            squadra_id INTEGER,
+
+            note TEXT,
+
+            FOREIGN KEY (cantiere_id)
+                REFERENCES cantieri(id),
+
+            FOREIGN KEY (squadra_id)
+                REFERENCES squadre(id)
+        )
     """)
 
-    colonne_squadre = [
-        riga["name"]
-        for riga in cursor.fetchall()
-    ]
-
-
-    # Se il database esisteva già dalla versione precedente,
-    # aggiungiamo la nuova colonna senza cancellare i dati.
-
-    if "caposquadra_id" not in colonne_squadre:
-
-        cursor.execute("""
-            ALTER TABLE squadre
-            ADD COLUMN caposquadra_id INTEGER
-        """)
-
 
     # ======================================================
-    # RECUPERO VECCHI CAPISQUADRA
-    # ======================================================
-
-    # Se avevamo già scritto un nome nel vecchio campo
-    # "caposquadra", proviamo automaticamente a trovare
-    # l'operaio corrispondente.
-
-    cursor.execute("""
-        SELECT
-            id,
-            caposquadra
-        FROM squadre
-        WHERE
-            caposquadra IS NOT NULL
-            AND TRIM(caposquadra) != ''
-            AND (
-                caposquadra_id IS NULL
-                OR caposquadra_id = 0
-            )
-    """)
-
-    vecchie_squadre = cursor.fetchall()
-
-
-    for squadra in vecchie_squadre:
-
-        nome_caposquadra = (
-            squadra["caposquadra"]
-            or ""
-        ).strip()
-
-
-        if not nome_caposquadra:
-            continue
-
-
-        # Prima proviamo "Nome Cognome"
-
-        parti = nome_caposquadra.split()
-
-
-        if len(parti) >= 2:
-
-            nome = parti[0]
-
-            cognome = " ".join(
-                parti[1:]
-            )
-
-
-            cursor.execute("""
-                SELECT id
-                FROM operai
-                WHERE
-                    LOWER(nome) = LOWER(?)
-                    AND LOWER(cognome) = LOWER(?)
-                LIMIT 1
-            """, (
-                nome,
-                cognome
-            ))
-
-
-            operaio = cursor.fetchone()
-
-
-            if operaio:
-
-                cursor.execute("""
-                    UPDATE squadre
-                    SET caposquadra_id = ?
-                    WHERE id = ?
-                """, (
-                    operaio["id"],
-                    squadra["id"]
-                ))
-
-
-    # ======================================================
-    # COMMIT
+    # SALVATAGGIO
     # ======================================================
 
     conn.commit()
@@ -264,7 +184,7 @@ def inizializza_database():
 
 
 # ==========================================================
-# AVVIO DIRETTO DEL FILE
+# AVVIO DIRETTO
 # ==========================================================
 
 if __name__ == "__main__":
