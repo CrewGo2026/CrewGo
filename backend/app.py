@@ -49,6 +49,14 @@ def operai():
     return send_from_directory("../frontend", "operai.html")
 
 
+@app.route("/cantieri")
+def cantieri():
+    if "utente" not in session:
+        return redirect("/")
+
+    return send_from_directory("../frontend", "cantieri.html")
+
+
 @app.route("/logout")
 def logout():
     session.clear()
