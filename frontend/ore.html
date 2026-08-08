@@ -476,23 +476,39 @@
             oninput="mostraOre()"
         >
 
-
         <input
             id="filtroData"
             type="date"
             onchange="mostraOre()"
+            title="Filtra per giorno"
         >
 
+        <input
+            id="filtroMese"
+            type="month"
+            onchange="mostraOre()"
+            title="Filtra per mese"
+        >
+
+        <select
+            id="filtroOperaio"
+            onchange="mostraOre()"
+        >
+            <option value="">Tutti gli operai</option>
+        </select>
+
+        <select
+            id="filtroSquadra"
+            onchange="mostraOre()"
+        >
+            <option value="">Tutte le squadre</option>
+        </select>
 
         <select
             id="filtroCantiere"
             onchange="mostraOre()"
         >
-
-            <option value="">
-                Tutti i cantieri
-            </option>
-
+            <option value="">Tutti i cantieri</option>
         </select>
 
     </div>
@@ -738,6 +754,8 @@
 
     let cantieri = [];
 
+    let registrazioniFiltrate = [];
+
 
     function mostraErrore(messaggio) {
 
@@ -869,6 +887,16 @@
             );
 
 
+        const filtroOperaio =
+            document.getElementById(
+                "filtroOperaio"
+            );
+
+        const filtroSquadra =
+            document.getElementById(
+                "filtroSquadra"
+            );
+
         const filtroCantiere =
             document.getElementById(
                 "filtroCantiere"
@@ -895,6 +923,18 @@
             </option>
         `;
 
+
+        filtroOperaio.innerHTML = `
+            <option value="">
+                Tutti gli operai
+            </option>
+        `;
+
+        filtroSquadra.innerHTML = `
+            <option value="">
+                Tutte le squadre
+            </option>
+        `;
 
         filtroCantiere.innerHTML = `
             <option value="">
@@ -933,6 +973,25 @@
             });
 
 
+        operai
+            .filter(
+                operaio =>
+                    operaio.stato === "Attivo"
+            )
+            .forEach(operaio => {
+                const option =
+                    document.createElement("option");
+
+                option.value = operaio.id;
+
+                option.textContent =
+                    operaio.nome +
+                    " " +
+                    operaio.cognome;
+
+                filtroOperaio.appendChild(option);
+            });
+
         squadre
             .filter(
                 squadra =>
@@ -960,6 +1019,21 @@
 
             });
 
+
+        squadre
+            .filter(
+                squadra =>
+                    squadra.stato === "Attiva"
+            )
+            .forEach(squadra => {
+                const option =
+                    document.createElement("option");
+
+                option.value = squadra.id;
+                option.textContent = squadra.nome;
+
+                filtroSquadra.appendChild(option);
+            });
 
         cantieri
             .filter(
@@ -1350,183 +1424,139 @@
     function mostraOre() {
 
         const tbody =
-            document.getElementById(
-                "tabellaOre"
-            );
-
+            document.getElementById("tabellaOre");
 
         const ricerca =
-            document
-                .getElementById(
-                    "ricerca"
-                )
+            document.getElementById("ricerca")
                 .value
                 .toLowerCase()
                 .trim();
 
-
         const filtroData =
-            document
-                .getElementById(
-                    "filtroData"
-                )
-                .value;
+            document.getElementById("filtroData").value;
 
+        const filtroMese =
+            document.getElementById("filtroMese").value;
+
+        const filtroOperaio =
+            document.getElementById("filtroOperaio").value;
+
+        const filtroSquadra =
+            document.getElementById("filtroSquadra").value;
 
         const filtroCantiere =
-            document
-                .getElementById(
-                    "filtroCantiere"
-                )
-                .value;
+            document.getElementById("filtroCantiere").value;
 
-
-        const filtrate =
+        registrazioniFiltrate =
             registrazioni.filter(record => {
 
                 const testo = (
-
-                    (record.operaio_nome || "") +
-                    " " +
-                    (record.operaio_cognome || "") +
-                    " " +
-                    (record.squadra_nome || "") +
-                    " " +
+                    (record.operaio_nome || "") + " " +
+                    (record.operaio_cognome || "") + " " +
+                    (record.squadra_nome || "") + " " +
                     (record.cantiere_nome || "")
-
                 ).toLowerCase();
 
-
                 const ricercaOK =
-                    testo.includes(
-                        ricerca
-                    );
-
+                    testo.includes(ricerca);
 
                 const dataOK =
                     !filtroData ||
                     record.data === filtroData;
 
+                const meseOK =
+                    !filtroMese ||
+                    String(record.data || "")
+                        .startsWith(filtroMese);
+
+                const operaioOK =
+                    !filtroOperaio ||
+                    String(record.operaio_id) ===
+                    String(filtroOperaio);
+
+                const squadraOK =
+                    !filtroSquadra ||
+                    String(record.squadra_id) ===
+                    String(filtroSquadra);
 
                 const cantiereOK =
                     !filtroCantiere ||
-                    String(
-                        record.cantiere_id
-                    ) === String(
-                        filtroCantiere
-                    );
-
+                    String(record.cantiere_id) ===
+                    String(filtroCantiere);
 
                 return (
                     ricercaOK &&
                     dataOK &&
+                    meseOK &&
+                    operaioOK &&
+                    squadraOK &&
                     cantiereOK
                 );
-
             });
-
 
         tbody.innerHTML = "";
 
-
-        if (filtrate.length === 0) {
+        if (registrazioniFiltrate.length === 0) {
 
             tbody.innerHTML = `
                 <tr>
-
                     <td colspan="8">
-
                         <div class="empty">
                             ${
                                 registrazioni.length === 0
                                 ? "Nessuna registrazione presente nel database."
-                                : "Nessun risultato trovato."
+                                : "Nessun risultato trovato con i filtri selezionati."
                             }
                         </div>
-
                     </td>
-
                 </tr>
             `;
 
         } else {
 
-            filtrate.forEach(record => {
+            registrazioniFiltrate.forEach(record => {
 
                 const riga =
-                    document.createElement(
-                        "tr"
-                    );
-
+                    document.createElement("tr");
 
                 const ordinarie =
-                    Number(
-                        record.ore_ordinarie || 0
-                    );
-
+                    Number(record.ore_ordinarie || 0);
 
                 const straordinarie =
-                    Number(
-                        record.ore_straordinarie || 0
-                    );
-
+                    Number(record.ore_straordinarie || 0);
 
                 const totale =
-                    ordinarie +
-                    straordinarie;
-
+                    ordinarie + straordinarie;
 
                 riga.innerHTML = `
-
-                    <td>
-                        ${formattaData(
-                            record.data
-                        )}
-                    </td>
+                    <td>${formattaData(record.data)}</td>
 
                     <td class="name">
-                        ${escapeHtml(
-                            record.operaio_nome || ""
-                        )}
-                        ${escapeHtml(
-                            record.operaio_cognome || ""
-                        )}
+                        ${escapeHtml(record.operaio_nome || "")}
+                        ${escapeHtml(record.operaio_cognome || "")}
                     </td>
 
                     <td>
-                        ${escapeHtml(
-                            record.squadra_nome ||
-                            "—"
-                        )}
+                        ${escapeHtml(record.squadra_nome || "—")}
                     </td>
 
                     <td>
-                        ${escapeHtml(
-                            record.cantiere_nome ||
-                            "—"
-                        )}
+                        ${escapeHtml(record.cantiere_nome || "—")}
                     </td>
 
                     <td class="hours">
-                        ${formattaOre(
-                            ordinarie
-                        )} h
+                        ${formattaOre(ordinarie)} h
                     </td>
 
                     <td class="overtime">
-                        ${formattaOre(
-                            straordinarie
-                        )} h
+                        ${formattaOre(straordinarie)} h
                     </td>
 
                     <td class="hours">
-                        ${formattaOre(
-                            totale
-                        )} h
+                        ${formattaOre(totale)} h
                     </td>
 
                     <td>
-
                         <button
                             class="action-button edit"
                             onclick="modificaOre(${record.id})"
@@ -1540,102 +1570,59 @@
                         >
                             Elimina
                         </button>
-
                     </td>
-
                 `;
 
-
-                tbody.appendChild(
-                    riga
-                );
-
+                tbody.appendChild(riga);
             });
-
         }
 
-
         aggiornaStatistiche();
-
     }
 
 
     function aggiornaStatistiche() {
 
         const totale =
-            registrazioni.length;
-
+            registrazioniFiltrate.length;
 
         const ordinarie =
-            registrazioni.reduce(
-                (
-                    somma,
-                    record
-                ) =>
+            registrazioniFiltrate.reduce(
+                (somma, record) =>
                     somma +
-                    Number(
-                        record.ore_ordinarie || 0
-                    ),
+                    Number(record.ore_ordinarie || 0),
                 0
             );
-
 
         const straordinarie =
-            registrazioni.reduce(
-                (
-                    somma,
-                    record
-                ) =>
+            registrazioniFiltrate.reduce(
+                (somma, record) =>
                     somma +
-                    Number(
-                        record.ore_straordinarie || 0
-                    ),
+                    Number(record.ore_straordinarie || 0),
                 0
             );
 
-
         const complessive =
-            ordinarie +
-            straordinarie;
-
+            ordinarie + straordinarie;
 
         document
-            .getElementById(
-                "totaleRegistrazioni"
-            )
-            .textContent =
-            totale;
-
+            .getElementById("totaleRegistrazioni")
+            .textContent = totale;
 
         document
-            .getElementById(
-                "totaleOrdinarie"
-            )
+            .getElementById("totaleOrdinarie")
             .textContent =
-            formattaOre(
-                ordinarie
-            );
-
+            formattaOre(ordinarie);
 
         document
-            .getElementById(
-                "totaleStraordinarie"
-            )
+            .getElementById("totaleStraordinarie")
             .textContent =
-            formattaOre(
-                straordinarie
-            );
-
+            formattaOre(straordinarie);
 
         document
-            .getElementById(
-                "totaleComplessive"
-            )
+            .getElementById("totaleComplessive")
             .textContent =
-            formattaOre(
-                complessive
-            );
-
+            formattaOre(complessive);
     }
 
 
