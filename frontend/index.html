@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrewGo</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f5f8;
+            color: #172033;
+        }
+
+        header {
+            background: #111827;
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .role {
+            background: #2563eb;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        main {
+            padding: 30px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .card h2 {
+            margin: 0 0 8px;
+            font-size: 20px;
+        }
+
+        .card p {
+            margin: 0;
+            color: #64748b;
+        }
+
+        footer {
+            text-align: center;
+            color: #94a3b8;
+            padding: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">CrewGo</div>
+    <div class="role">AREA TITOLARE</div>
+</header>
+
+<main>
+
+    <h1>Benvenuto in CrewGo</h1>
+
+    <div class="subtitle">
+        La tua azienda, le tue squadre, i tuoi cantieri. Tutto in un unico posto.
+    </div>
+
+    <div class="grid">
+
+        <div class="card">
+            <div class="icon">👷</div>
+            <h2>Operai</h2>
+            <p>Gestisci dipendenti, mansioni, livelli, documenti e ore.</p>
+        </div>
+
+        <div class="card">
+            <div class="icon">🏗️</div>
+            <h2>Cantieri</h2>
+            <p>Organizza cantieri, clienti, indirizzi e posizioni GPS.</p>
+        </div>
+
+        <div class="card">
+            <div class="icon">👥</div>
+            <h2>Squadre</h2>
+            <p>Organizza squadre, capisquadra, persone e mezzi.</p>
+        </div>
+
+        <div class="card">
+            <div class="icon">🚐</div>
+            <h2>Mezzi</h2>
+            <p>Gestisci furgoni, automezzi, attrezzature e assegnazioni.</p>
+        </div>
+
+        <div class="card">
+            <div class="icon">🕐</div>
+            <h2>Ore lavorate</h2>
+            <p>Controlla ore ordinarie, straordinari e anomalie.</p>
+        </div>
+
+        <div class="card">
+            <div class="icon">📄</div>
+            <h2>Documenti</h2>
+            <p>POS, buste paga, CUD e documentazione aziendale.</p>
+        </div>
+
+        <div class="card">
+            <div class="icon">💶</div>
+            <h2>Fatture e pagamenti</h2>
+            <p>Controlla fatture, scadenze e pagamenti ricevuti.</p>
+        </div>
+
+        <div class="card">
+            <div class="icon">🤖</div>
+            <h2>Assistente CrewGo</h2>
+            <p>Organizza il lavoro anche attraverso la voce.</p>
+        </div>
+
+    </div>
+
+</main>
+
+<footer>
+    CrewGo — Gestione intelligente del lavoro
+</footer>
+
+</body>
+</html>
