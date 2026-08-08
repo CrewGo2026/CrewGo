@@ -143,7 +143,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 900px;
+            min-width: 1000px;
         }
 
         th {
@@ -212,7 +212,20 @@
             color: #64748b;
         }
 
-        /* MODALE */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
 
         .modal {
             display: none;
@@ -231,7 +244,7 @@
 
         .modal-box {
             width: 100%;
-            max-width: 600px;
+            max-width: 700px;
             background: white;
             border-radius: 18px;
             padding: 30px;
@@ -368,13 +381,16 @@
     </a>
 
 
+    <div id="errore" class="error"></div>
+
+
     <div class="top">
 
         <div>
             <h1>Operai</h1>
 
             <div class="subtitle">
-                Gestisci il personale della tua azienda.
+                Gestisci dipendenti, mansioni, contatti e stato lavorativo.
             </div>
         </div>
 
@@ -410,12 +426,12 @@
 
 
         <div class="stat">
-            <div class="stat-number" id="operaiInattivi">
+            <div class="stat-number" id="operaiNonAttivi">
                 0
             </div>
 
             <div class="stat-label">
-                Operai non attivi
+                Non attivi
             </div>
         </div>
 
@@ -426,7 +442,7 @@
         class="search"
         id="ricerca"
         type="text"
-        placeholder="🔍 Cerca per nome, email, mansione o squadra..."
+        placeholder="🔍 Cerca nome, cognome, mansione, telefono..."
         oninput="mostraOperai()"
     >
 
@@ -438,9 +454,8 @@
             <thead>
 
                 <tr>
-                    <th>Nome e Cognome</th>
-                    <th>Email</th>
-                    <th>Telefono</th>
+                    <th>Nome</th>
+                    <th>Contatti</th>
                     <th>Mansione</th>
                     <th>Squadra</th>
                     <th>Assunzione</th>
@@ -451,6 +466,15 @@
             </thead>
 
             <tbody id="tabellaOperai">
+
+                <tr>
+                    <td colspan="7">
+                        <div class="loading">
+                            Caricamento operai...
+                        </div>
+                    </td>
+                </tr>
+
             </tbody>
 
         </table>
@@ -459,8 +483,6 @@
 
 </main>
 
-
-<!-- MODALE AGGIUNTA / MODIFICA -->
 
 <div class="modal" id="modalOperaio">
 
@@ -481,38 +503,48 @@
 
         <form id="formOperaio">
 
-            <input type="hidden" id="operaioId">
+            <input
+                type="hidden"
+                id="operaioId"
+            >
 
 
             <div class="form-grid">
 
                 <div class="form-group">
+
                     <label for="nome">
-                        Nome
+                        Nome *
                     </label>
 
                     <input
                         id="nome"
                         type="text"
+                        placeholder="Nome"
                         required
                     >
+
                 </div>
 
 
                 <div class="form-group">
+
                     <label for="cognome">
-                        Cognome
+                        Cognome *
                     </label>
 
                     <input
                         id="cognome"
                         type="text"
+                        placeholder="Cognome"
                         required
                     >
+
                 </div>
 
 
                 <div class="form-group">
+
                     <label for="email">
                         Email
                     </label>
@@ -520,109 +552,58 @@
                     <input
                         id="email"
                         type="email"
+                        placeholder="email@esempio.it"
                     >
+
                 </div>
 
 
                 <div class="form-group">
+
                     <label for="telefono">
                         Telefono
                     </label>
 
                     <input
                         id="telefono"
-                        type="tel"
+                        type="text"
+                        placeholder="Numero di telefono"
                     >
+
                 </div>
 
 
                 <div class="form-group">
+
                     <label for="mansione">
                         Mansione
                     </label>
 
-                    <select id="mansione">
+                    <input
+                        id="mansione"
+                        type="text"
+                        placeholder="Es. Montatore"
+                    >
 
-                        <option value="">
-                            Seleziona mansione
-                        </option>
-
-                        <option value="Montatore">
-                            Montatore
-                        </option>
-
-                        <option value="Caposquadra">
-                            Caposquadra
-                        </option>
-
-                        <option value="Saldatore">
-                            Saldatore
-                        </option>
-
-                        <option value="Elettricista">
-                            Elettricista
-                        </option>
-
-                        <option value="Carpentiere">
-                            Carpentiere
-                        </option>
-
-                        <option value="Autista">
-                            Autista
-                        </option>
-
-                        <option value="Altro">
-                            Altro
-                        </option>
-
-                    </select>
                 </div>
 
 
                 <div class="form-group">
-                    <label for="squadra">
-                        Squadra
-                    </label>
 
-                    <select id="squadra">
-
-                        <option value="">
-                            Nessuna squadra
-                        </option>
-
-                        <option value="Squadra 1">
-                            Squadra 1
-                        </option>
-
-                        <option value="Squadra 2">
-                            Squadra 2
-                        </option>
-
-                        <option value="Squadra 3">
-                            Squadra 3
-                        </option>
-
-                        <option value="Squadra 4">
-                            Squadra 4
-                        </option>
-
-                    </select>
-                </div>
-
-
-                <div class="form-group">
-                    <label for="assunzione">
-                        Data di assunzione
+                    <label for="dataAssunzione">
+                        Data assunzione
                     </label>
 
                     <input
-                        id="assunzione"
+                        id="dataAssunzione"
                         type="date"
                     >
+
                 </div>
 
 
                 <div class="form-group">
+
                     <label for="stato">
                         Stato
                     </label>
@@ -638,6 +619,7 @@
                         </option>
 
                     </select>
+
                 </div>
 
             </div>
@@ -671,31 +653,84 @@
 
 <script>
 
-    let operai = JSON.parse(
-        localStorage.getItem("crewgo_operai") || "[]"
-    );
+    let operai = [];
 
 
-    function salvaDati() {
+    function mostraErrore(messaggio) {
 
-        localStorage.setItem(
-            "crewgo_operai",
-            JSON.stringify(operai)
-        );
+        const box =
+            document.getElementById("errore");
+
+        box.textContent = messaggio;
+
+        box.style.display = "block";
+
+    }
+
+
+    function nascondiErrore() {
+
+        document
+            .getElementById("errore")
+            .style.display = "none";
+
+    }
+
+
+    async function caricaOperai() {
+
+        try {
+
+            nascondiErrore();
+
+            const risposta =
+                await fetch("/api/operai");
+
+
+            if (!risposta.ok) {
+
+                throw new Error(
+                    "Impossibile caricare gli operai."
+                );
+
+            }
+
+
+            operai =
+                await risposta.json();
+
+
+            mostraOperai();
+
+        } catch (errore) {
+
+            mostraErrore(
+                errore.message
+            );
+
+        }
 
     }
 
 
     function apriNuovoOperaio() {
 
-        document.getElementById("formOperaio").reset();
+        document
+            .getElementById("formOperaio")
+            .reset();
 
-        document.getElementById("operaioId").value = "";
+        document
+            .getElementById("operaioId")
+            .value = "";
 
-        document.getElementById("titoloModal").textContent =
+        document
+            .getElementById("titoloModal")
+            .textContent =
             "Aggiungi operaio";
 
-        document.getElementById("modalOperaio").classList.add("show");
+        document
+            .getElementById("modalOperaio")
+            .classList.add("show");
 
     }
 
@@ -709,89 +744,148 @@
     }
 
 
-    function generaId() {
-
-        return Date.now().toString();
-
-    }
-
-
     document
         .getElementById("formOperaio")
-        .addEventListener("submit", function(event) {
+        .addEventListener(
+            "submit",
+            async function(event) {
 
-            event.preventDefault();
+                event.preventDefault();
 
-
-            const id =
-                document.getElementById("operaioId").value;
-
-
-            const operaio = {
-
-                id: id || generaId(),
-
-                nome:
-                    document.getElementById("nome").value.trim(),
-
-                cognome:
-                    document.getElementById("cognome").value.trim(),
-
-                email:
-                    document.getElementById("email").value.trim(),
-
-                telefono:
-                    document.getElementById("telefono").value.trim(),
-
-                mansione:
-                    document.getElementById("mansione").value,
-
-                squadra:
-                    document.getElementById("squadra").value,
-
-                assunzione:
-                    document.getElementById("assunzione").value,
-
-                stato:
-                    document.getElementById("stato").value
-
-            };
+                nascondiErrore();
 
 
-            if (id) {
+                const id =
+                    document
+                        .getElementById("operaioId")
+                        .value;
 
-                const indice =
-                    operai.findIndex(
-                        item => item.id === id
+
+                const dati = {
+
+                    nome:
+                        document
+                            .getElementById("nome")
+                            .value
+                            .trim(),
+
+                    cognome:
+                        document
+                            .getElementById("cognome")
+                            .value
+                            .trim(),
+
+                    email:
+                        document
+                            .getElementById("email")
+                            .value
+                            .trim(),
+
+                    telefono:
+                        document
+                            .getElementById("telefono")
+                            .value
+                            .trim(),
+
+                    mansione:
+                        document
+                            .getElementById("mansione")
+                            .value
+                            .trim(),
+
+                    data_assunzione:
+                        document
+                            .getElementById("dataAssunzione")
+                            .value,
+
+                    stato:
+                        document
+                            .getElementById("stato")
+                            .value
+
+                };
+
+
+                try {
+
+                    let risposta;
+
+
+                    if (id) {
+
+                        risposta =
+                            await fetch(
+                                `/api/operai/${id}`,
+                                {
+                                    method: "PUT",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+
+                                    body:
+                                        JSON.stringify(dati)
+                                }
+                            );
+
+                    } else {
+
+                        risposta =
+                            await fetch(
+                                "/api/operai",
+                                {
+                                    method: "POST",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+
+                                    body:
+                                        JSON.stringify(dati)
+                                }
+                            );
+
+                    }
+
+
+                    const risultato =
+                        await risposta.json();
+
+
+                    if (!risposta.ok) {
+
+                        throw new Error(
+                            risultato.errore ||
+                            "Errore durante il salvataggio."
+                        );
+
+                    }
+
+
+                    chiudiModal();
+
+                    await caricaOperai();
+
+                } catch (errore) {
+
+                    mostraErrore(
+                        errore.message
                     );
-
-                if (indice !== -1) {
-
-                    operai[indice] = operaio;
 
                 }
 
-            } else {
-
-                operai.push(operaio);
-
             }
-
-
-            salvaDati();
-
-            mostraOperai();
-
-            chiudiModal();
-
-        });
+        );
 
 
     function modificaOperaio(id) {
 
         const operaio =
             operai.find(
-                item => item.id === id
+                item =>
+                    item.id === id
             );
 
 
@@ -800,47 +894,73 @@
         }
 
 
-        document.getElementById("operaioId").value =
+        document
+            .getElementById("operaioId")
+            .value =
             operaio.id;
 
-        document.getElementById("nome").value =
-            operaio.nome;
 
-        document.getElementById("cognome").value =
-            operaio.cognome;
-
-        document.getElementById("email").value =
-            operaio.email;
-
-        document.getElementById("telefono").value =
-            operaio.telefono;
-
-        document.getElementById("mansione").value =
-            operaio.mansione;
-
-        document.getElementById("squadra").value =
-            operaio.squadra;
-
-        document.getElementById("assunzione").value =
-            operaio.assunzione;
-
-        document.getElementById("stato").value =
-            operaio.stato;
+        document
+            .getElementById("nome")
+            .value =
+            operaio.nome || "";
 
 
-        document.getElementById("titoloModal").textContent =
+        document
+            .getElementById("cognome")
+            .value =
+            operaio.cognome || "";
+
+
+        document
+            .getElementById("email")
+            .value =
+            operaio.email || "";
+
+
+        document
+            .getElementById("telefono")
+            .value =
+            operaio.telefono || "";
+
+
+        document
+            .getElementById("mansione")
+            .value =
+            operaio.mansione || "";
+
+
+        document
+            .getElementById("dataAssunzione")
+            .value =
+            operaio.data_assunzione || "";
+
+
+        document
+            .getElementById("stato")
+            .value =
+            operaio.stato || "Attivo";
+
+
+        document
+            .getElementById("titoloModal")
+            .textContent =
             "Modifica operaio";
 
-        document.getElementById("modalOperaio").classList.add("show");
+
+        document
+            .getElementById("modalOperaio")
+            .classList.add("show");
 
     }
 
 
-    function cambiaStato(id) {
+    async function cambiaStato(id) {
 
         const operaio =
             operai.find(
-                item => item.id === id
+                item =>
+                    item.id === id
             );
 
 
@@ -849,25 +969,61 @@
         }
 
 
-        if (operaio.stato === "Attivo") {
+        const nuovoStato =
+            operaio.stato === "Attivo"
+            ? "Non attivo"
+            : "Attivo";
 
-            operaio.stato = "Non attivo";
 
-        } else {
+        try {
 
-            operaio.stato = "Attivo";
+            const risposta =
+                await fetch(
+                    `/api/operai/${id}/stato`,
+                    {
+                        method: "PUT",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                stato: nuovoStato
+                            })
+                    }
+                );
+
+
+            const risultato =
+                await risposta.json();
+
+
+            if (!risposta.ok) {
+
+                throw new Error(
+                    risultato.errore ||
+                    "Errore durante la modifica dello stato."
+                );
+
+            }
+
+
+            await caricaOperai();
+
+        } catch (errore) {
+
+            mostraErrore(
+                errore.message
+            );
 
         }
-
-
-        salvaDati();
-
-        mostraOperai();
 
     }
 
 
-    function eliminaOperaio(id) {
+    async function eliminaOperaio(id) {
 
         const conferma =
             confirm(
@@ -880,15 +1036,40 @@
         }
 
 
-        operai =
-            operai.filter(
-                item => item.id !== id
+        try {
+
+            const risposta =
+                await fetch(
+                    `/api/operai/${id}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+
+            const risultato =
+                await risposta.json();
+
+
+            if (!risposta.ok) {
+
+                throw new Error(
+                    risultato.errore ||
+                    "Errore durante l'eliminazione."
+                );
+
+            }
+
+
+            await caricaOperai();
+
+        } catch (errore) {
+
+            mostraErrore(
+                errore.message
             );
 
-
-        salvaDati();
-
-        mostraOperai();
+        }
 
     }
 
@@ -896,7 +1077,9 @@
     function mostraOperai() {
 
         const tbody =
-            document.getElementById("tabellaOperai");
+            document
+                .getElementById("tabellaOperai");
+
 
         const ricerca =
             document
@@ -913,14 +1096,16 @@
 
                     operaio.nome + " " +
                     operaio.cognome + " " +
-                    operaio.email + " " +
-                    operaio.mansione + " " +
-                    operaio.squadra
+                    (operaio.email || "") + " " +
+                    (operaio.telefono || "") + " " +
+                    (operaio.mansione || "")
 
                 ).toLowerCase();
 
 
-                return testo.includes(ricerca);
+                return testo.includes(
+                    ricerca
+                );
 
             });
 
@@ -932,11 +1117,11 @@
 
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8">
+                    <td colspan="7">
                         <div class="empty">
                             ${
                                 operai.length === 0
-                                ? "Nessun operaio inserito."
+                                ? "Nessun operaio presente nel database."
                                 : "Nessun risultato trovato."
                             }
                         </div>
@@ -952,42 +1137,75 @@
                     document.createElement("tr");
 
 
-                const statoClasse =
+                const classeStato =
                     operaio.stato === "Attivo"
                     ? "active"
                     : "inactive";
 
 
+                const testoStato =
+                    operaio.stato || "Attivo";
+
+
                 riga.innerHTML = `
 
                     <td class="name">
-                        ${escapeHtml(operaio.nome)}
-                        ${escapeHtml(operaio.cognome)}
+                        ${escapeHtml(
+                            operaio.nome
+                        )}
+                        ${escapeHtml(
+                            operaio.cognome
+                        )}
                     </td>
 
                     <td>
-                        ${escapeHtml(operaio.email || "—")}
+                        ${
+                            escapeHtml(
+                                operaio.telefono || "—"
+                            )
+                        }
+                        <br>
+                        <small>
+                            ${
+                                escapeHtml(
+                                    operaio.email || ""
+                                )
+                            }
+                        </small>
                     </td>
 
                     <td>
-                        ${escapeHtml(operaio.telefono || "—")}
+                        ${
+                            escapeHtml(
+                                operaio.mansione || "—"
+                            )
+                        }
                     </td>
 
                     <td>
-                        ${escapeHtml(operaio.mansione || "—")}
+                        ${
+                            operaio.squadra_id
+                            ? "Squadra #" +
+                              operaio.squadra_id
+                            : "Non assegnata"
+                        }
                     </td>
 
                     <td>
-                        ${escapeHtml(operaio.squadra || "—")}
+                        ${
+                            formattaData(
+                                operaio.data_assunzione
+                            )
+                        }
                     </td>
 
                     <td>
-                        ${operaio.assunzione || "—"}
-                    </td>
-
-                    <td>
-                        <span class="status ${statoClasse}">
-                            ${escapeHtml(operaio.stato)}
+                        <span
+                            class="status ${classeStato}"
+                        >
+                            ${escapeHtml(
+                                testoStato
+                            )}
                         </span>
                     </td>
 
@@ -995,14 +1213,14 @@
 
                         <button
                             class="action-button edit"
-                            onclick="modificaOperaio('${operaio.id}')"
+                            onclick="modificaOperaio(${operaio.id})"
                         >
                             Modifica
                         </button>
 
                         <button
                             class="action-button disable"
-                            onclick="cambiaStato('${operaio.id}')"
+                            onclick="cambiaStato(${operaio.id})"
                         >
                             ${
                                 operaio.stato === "Attivo"
@@ -1013,7 +1231,7 @@
 
                         <button
                             class="action-button delete"
-                            onclick="eliminaOperaio('${operaio.id}')"
+                            onclick="eliminaOperaio(${operaio.id})"
                         >
                             Elimina
                         </button>
@@ -1043,24 +1261,61 @@
 
         const attivi =
             operai.filter(
-                item => item.stato === "Attivo"
+                operaio =>
+                    operaio.stato === "Attivo"
             ).length;
 
 
-        const inattivi =
+        const nonAttivi =
             operai.filter(
-                item => item.stato === "Non attivo"
+                operaio =>
+                    operaio.stato !== "Attivo"
             ).length;
 
 
-        document.getElementById("totaleOperai")
-            .textContent = totale;
+        document
+            .getElementById("totaleOperai")
+            .textContent =
+            totale;
 
-        document.getElementById("operaiAttivi")
-            .textContent = attivi;
 
-        document.getElementById("operaiInattivi")
-            .textContent = inattivi;
+        document
+            .getElementById("operaiAttivi")
+            .textContent =
+            attivi;
+
+
+        document
+            .getElementById("operaiNonAttivi")
+            .textContent =
+            nonAttivi;
+
+    }
+
+
+    function formattaData(data) {
+
+        if (!data) {
+            return "—";
+        }
+
+
+        const parti =
+            data.split("-");
+
+
+        if (parti.length !== 3) {
+            return data;
+        }
+
+
+        return (
+            parti[2] +
+            "/" +
+            parti[1] +
+            "/" +
+            parti[0]
+        );
 
     }
 
@@ -1068,11 +1323,26 @@
     function escapeHtml(testo) {
 
         return String(testo)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#039;"
+            );
 
     }
 
@@ -1082,7 +1352,10 @@
         function(event) {
 
             const modal =
-                document.getElementById("modalOperaio");
+                document
+                    .getElementById(
+                        "modalOperaio"
+                    );
 
 
             if (event.target === modal) {
@@ -1095,7 +1368,7 @@
     );
 
 
-    mostraOperai();
+    caricaOperai();
 
 </script>
 
