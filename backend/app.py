@@ -57,6 +57,14 @@ def cantieri():
     return send_from_directory("../frontend", "cantieri.html")
 
 
+@app.route("/squadre")
+def squadre():
+    if "utente" not in session:
+        return redirect("/")
+
+    return send_from_directory("../frontend", "squadre.html")
+
+
 @app.route("/logout")
 def logout():
     session.clear()
