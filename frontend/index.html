@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>CrewGo - Dashboard</title>
 
     <style>
@@ -55,60 +56,234 @@
 
         main {
             padding: 30px;
-            max-width: 1200px;
+            max-width: 1250px;
             margin: auto;
         }
 
+        .welcome {
+            margin-bottom: 25px;
+        }
+
         h1 {
-            margin-bottom: 8px;
+            margin: 0 0 8px;
         }
 
         .subtitle {
             color: #64748b;
+        }
+
+        .loading {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            color: #64748b;
+        }
+
+        .error {
+            display: none;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
             margin-bottom: 30px;
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
+        .stat {
             background: white;
-            padding: 24px;
             border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            text-decoration: none;
-            color: inherit;
-            display: block;
-            cursor: pointer;
-            transition: transform 0.2s;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
         }
 
-        .card:hover {
-            transform: translateY(-3px);
+        .stat-icon {
+            font-size: 28px;
+            margin-bottom: 10px;
         }
 
-        .icon {
-            font-size: 32px;
-            margin-bottom: 12px;
+        .stat-number {
+            font-size: 30px;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
 
-        .card h2 {
-            margin: 0 0 8px;
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .section h2 {
+            margin: 0;
             font-size: 20px;
         }
 
-        .card p {
-            margin: 0;
+        .section-link {
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
             color: #64748b;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .empty {
+            color: #94a3b8;
+            padding: 15px 0;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .quick-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 18px;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .quick-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+
+        .quick-icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .quick-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .quick-description {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .hours-total {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .hours-description {
+            color: #64748b;
+            font-size: 14px;
         }
 
         footer {
             text-align: center;
             color: #94a3b8;
             padding: 30px;
+        }
+
+        @media (max-width: 1000px) {
+            .stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .quick-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .bottom-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 650px) {
+            header {
+                padding: 16px;
+            }
+
+            main {
+                padding: 18px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .quick-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-right {
+                gap: 8px;
+            }
+
+            .role {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -138,117 +313,434 @@
 
 <main>
 
-    <h1>Benvenuto in CrewGo</h1>
+    <div class="welcome">
 
-    <div class="subtitle">
-        La tua azienda, le tue squadre, i tuoi cantieri. Tutto in un unico posto.
+        <h1>Dashboard</h1>
+
+        <div class="subtitle">
+            La situazione della tua azienda in un unico posto.
+        </div>
+
     </div>
 
 
-    <div class="grid">
-
-        <a class="card" href="/operai">
-
-            <div class="icon">👷</div>
-
-            <h2>Operai</h2>
-
-            <p>
-                Gestisci dipendenti, mansioni, livelli, documenti e ore.
-            </p>
-
-        </a>
+    <div id="errore" class="error"></div>
 
 
-        <a class="card" href="/cantieri">
-
-            <div class="icon">🏗️</div>
-
-            <h2>Cantieri</h2>
-
-            <p>
-                Organizza cantieri, clienti, indirizzi e posizioni GPS.
-            </p>
-
-        </a>
+    <div id="caricamento" class="loading">
+        Caricamento dati CrewGo...
+    </div>
 
 
-        <a class="card" href="/squadre">
+    <!-- ========================= -->
+    <!-- STATISTICHE PRINCIPALI -->
+    <!-- ========================= -->
 
-            <div class="icon">👥</div>
+    <div class="stats">
 
-            <h2>Squadre</h2>
+        <div class="stat">
 
-            <p>
-                Organizza squadre, capisquadra, persone e mezzi.
-            </p>
+            <div class="stat-icon">👷</div>
 
-        </a>
+            <div
+                class="stat-number"
+                id="totaleOperai"
+            >
+                0
+            </div>
 
+            <div class="stat-label">
+                Operai attivi
+            </div>
 
-        <a class="card" href="#">
-
-            <div class="icon">🚐</div>
-
-            <h2>Mezzi</h2>
-
-            <p>
-                Gestisci furgoni, automezzi, attrezzature e assegnazioni.
-            </p>
-
-        </a>
+        </div>
 
 
-        <a class="card" href="/ore">
+        <div class="stat">
 
-            <div class="icon">🕐</div>
+            <div class="stat-icon">👥</div>
 
-            <h2>Ore lavorate</h2>
+            <div
+                class="stat-number"
+                id="totaleSquadre"
+            >
+                0
+            </div>
 
-            <p>
-                Controlla ore ordinarie, straordinari e anomalie.
-            </p>
+            <div class="stat-label">
+                Squadre attive
+            </div>
 
-        </a>
-
-
-        <a class="card" href="#">
-
-            <div class="icon">📄</div>
-
-            <h2>Documenti</h2>
-
-            <p>
-                POS, buste paga, CUD e documentazione aziendale.
-            </p>
-
-        </a>
+        </div>
 
 
-        <a class="card" href="#">
+        <div class="stat">
 
-            <div class="icon">💶</div>
+            <div class="stat-icon">🏗️</div>
 
-            <h2>Fatture e pagamenti</h2>
+            <div
+                class="stat-number"
+                id="totaleCantieri"
+            >
+                0
+            </div>
 
-            <p>
-                Controlla fatture, scadenze e pagamenti ricevuti.
-            </p>
+            <div class="stat-label">
+                Cantieri attivi
+            </div>
 
-        </a>
+        </div>
 
 
-        <a class="card" href="#">
+        <div class="stat">
 
-            <div class="icon">🤖</div>
+            <div class="stat-icon">🕐</div>
 
-            <h2>Assistente CrewGo</h2>
+            <div
+                class="stat-number"
+                id="oreMese"
+            >
+                0
+            </div>
 
-            <p>
-                Organizza il lavoro anche attraverso la voce.
-            </p>
+            <div class="stat-label">
+                Ore lavorate questo mese
+            </div>
 
-        </a>
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-icon">⚡</div>
+
+            <div
+                class="stat-number"
+                id="straordinariMese"
+            >
+                0
+            </div>
+
+            <div class="stat-label">
+                Straordinari questo mese
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- ACCESSO RAPIDO -->
+    <!-- ========================= -->
+
+    <div class="section">
+
+        <div class="section-header">
+
+            <h2>
+                Gestione azienda
+            </h2>
+
+        </div>
+
+
+        <div class="quick-grid">
+
+            <a
+                class="quick-card"
+                href="/operai"
+            >
+
+                <div class="quick-icon">
+                    👷
+                </div>
+
+                <div class="quick-title">
+                    Operai
+                </div>
+
+                <div class="quick-description">
+                    Gestisci personale, mansioni e stato degli operai.
+                </div>
+
+            </a>
+
+
+            <a
+                class="quick-card"
+                href="/cantieri"
+            >
+
+                <div class="quick-icon">
+                    🏗️
+                </div>
+
+                <div class="quick-title">
+                    Cantieri
+                </div>
+
+                <div class="quick-description">
+                    Gestisci cantieri, clienti, indirizzi e stato dei lavori.
+                </div>
+
+            </a>
+
+
+            <a
+                class="quick-card"
+                href="/squadre"
+            >
+
+                <div class="quick-icon">
+                    👥
+                </div>
+
+                <div class="quick-title">
+                    Squadre
+                </div>
+
+                <div class="quick-description">
+                    Organizza squadre e capisquadra.
+                </div>
+
+            </a>
+
+
+            <a
+                class="quick-card"
+                href="/ore"
+            >
+
+                <div class="quick-icon">
+                    🕐
+                </div>
+
+                <div class="quick-title">
+                    Ore lavorate
+                </div>
+
+                <div class="quick-description">
+                    Registra e controlla ore ordinarie e straordinari.
+                </div>
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- CANTIERI -->
+    <!-- ========================= -->
+
+    <div class="section">
+
+        <div class="section-header">
+
+            <h2>
+                Cantieri attivi
+            </h2>
+
+            <a
+                class="section-link"
+                href="/cantieri"
+            >
+                Gestisci cantieri →
+            </a>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Cantiere
+                        </th>
+
+                        <th>
+                            Cliente
+                        </th>
+
+                        <th>
+                            Città
+                        </th>
+
+                        <th>
+                            Caposquadra
+                        </th>
+
+                        <th>
+                            Stato
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="tabellaCantieri">
+
+                    <tr>
+                        <td
+                            colspan="5"
+                            class="empty"
+                        >
+                            Nessun cantiere attivo.
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- SQUADRE -->
+    <!-- ========================= -->
+
+    <div class="section">
+
+        <div class="section-header">
+
+            <h2>
+                Squadre
+            </h2>
+
+            <a
+                class="section-link"
+                href="/squadre"
+            >
+                Gestisci squadre →
+            </a>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Squadra
+                        </th>
+
+                        <th>
+                            Caposquadra
+                        </th>
+
+                        <th>
+                            Cantiere
+                        </th>
+
+                        <th>
+                            Operai
+                        </th>
+
+                        <th>
+                            Stato
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="tabellaSquadre">
+
+                    <tr>
+                        <td
+                            colspan="5"
+                            class="empty"
+                        >
+                            Nessuna squadra attiva.
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- RIEPILOGO ORE -->
+    <!-- ========================= -->
+
+    <div class="bottom-grid">
+
+        <div class="section">
+
+            <div class="section-header">
+
+                <h2>
+                    Ore del mese
+                </h2>
+
+                <a
+                    class="section-link"
+                    href="/ore"
+                >
+                    Vedi ore →
+                </a>
+
+            </div>
+
+
+            <div
+                class="hours-total"
+                id="riepilogoOre"
+            >
+                0 ore
+            </div>
+
+            <div class="hours-description">
+                Totale ore ordinarie + straordinarie registrate nel mese corrente.
+            </div>
+
+        </div>
+
+
+        <div class="section">
+
+            <div class="section-header">
+
+                <h2>
+                    Situazione
+                </h2>
+
+            </div>
+
+
+            <div class="hours-total">
+                <span id="riepilogoOperai">
+                    0
+                </span>
+            </div>
+
+            <div class="hours-description">
+                Operai attivi presenti nel sistema.
+            </div>
+
+        </div>
 
     </div>
 
@@ -261,6 +753,403 @@
 
 </footer>
 
+
+<script>
+
+    let datiOperai = [];
+    let datiCantieri = [];
+    let datiSquadre = [];
+    let datiOre = [];
+
+
+    function mostraErrore(messaggio) {
+
+        const elemento = document.getElementById("errore");
+
+        elemento.textContent = messaggio;
+
+        elemento.style.display = "block";
+
+    }
+
+
+    async function caricaDati() {
+
+        try {
+
+            const [
+                rispostaOperai,
+                rispostaCantieri,
+                rispostaSquadre,
+                rispostaOre
+            ] = await Promise.all([
+
+                fetch("/api/operai"),
+
+                fetch("/api/cantieri"),
+
+                fetch("/api/squadre"),
+
+                fetch("/api/ore")
+
+            ]);
+
+
+            if (
+                !rispostaOperai.ok ||
+                !rispostaCantieri.ok ||
+                !rispostaSquadre.ok ||
+                !rispostaOre.ok
+            ) {
+
+                throw new Error(
+                    "Impossibile caricare i dati della dashboard."
+                );
+
+            }
+
+
+            datiOperai = await rispostaOperai.json();
+
+            datiCantieri = await rispostaCantieri.json();
+
+            datiSquadre = await rispostaSquadre.json();
+
+            datiOre = await rispostaOre.json();
+
+
+            aggiornaDashboard();
+
+
+            document.getElementById(
+                "caricamento"
+            ).style.display = "none";
+
+
+        } catch (errore) {
+
+            console.error(errore);
+
+            document.getElementById(
+                "caricamento"
+            ).style.display = "none";
+
+            mostraErrore(
+                "Impossibile caricare i dati. Controlla che il server CrewGo sia attivo."
+            );
+
+        }
+
+    }
+
+
+    function eAttivo(elemento) {
+
+        if (!elemento) {
+            return false;
+        }
+
+        const stato = String(
+            elemento.stato || ""
+        ).toLowerCase().trim();
+
+        return (
+            stato === "" ||
+            stato === "attivo" ||
+            stato === "attiva"
+        );
+
+    }
+
+
+    function aggiornaDashboard() {
+
+        const operaiAttivi =
+            datiOperai.filter(eAttivo);
+
+        const cantieriAttivi =
+            datiCantieri.filter(eAttivo);
+
+        const squadreAttive =
+            datiSquadre.filter(eAttivo);
+
+
+        document.getElementById(
+            "totaleOperai"
+        ).textContent =
+            operaiAttivi.length;
+
+
+        document.getElementById(
+            "totaleCantieri"
+        ).textContent =
+            cantieriAttivi.length;
+
+
+        document.getElementById(
+            "totaleSquadre"
+        ).textContent =
+            squadreAttive.length;
+
+
+        document.getElementById(
+            "riepilogoOperai"
+        ).textContent =
+            operaiAttivi.length;
+
+
+        const oggi = new Date();
+
+        const anno =
+            oggi.getFullYear();
+
+        const mese =
+            String(
+                oggi.getMonth() + 1
+            ).padStart(2, "0");
+
+
+        const oreQuestoMese =
+            datiOre.filter(ora => {
+
+                if (!ora.data) {
+                    return false;
+                }
+
+                const data =
+                    String(ora.data);
+
+                return data.startsWith(
+                    anno + "-" + mese
+                );
+
+            });
+
+
+        let oreOrdinarie = 0;
+
+        let oreStraordinarie = 0;
+
+
+        oreQuestoMese.forEach(ora => {
+
+            oreOrdinarie +=
+                Number(
+                    ora.ore_ordinarie || 0
+                );
+
+            oreStraordinarie +=
+                Number(
+                    ora.ore_straordinarie || 0
+                );
+
+        });
+
+
+        const totaleOre =
+            oreOrdinarie +
+            oreStraordinarie;
+
+
+        document.getElementById(
+            "oreMese"
+        ).textContent =
+            formattaNumero(totaleOre);
+
+
+        document.getElementById(
+            "straordinariMese"
+        ).textContent =
+            formattaNumero(oreStraordinarie);
+
+
+        document.getElementById(
+            "riepilogoOre"
+        ).textContent =
+            formattaNumero(totaleOre) +
+            " ore";
+
+
+        mostraCantieri(
+            cantieriAttivi
+        );
+
+
+        mostraSquadre(
+            squadreAttive
+        );
+
+    }
+
+
+    function formattaNumero(numero) {
+
+        return Number(numero)
+            .toFixed(2)
+            .replace(".00", "");
+
+    }
+
+
+    function mostraCantieri(cantieri) {
+
+        const corpo =
+            document.getElementById(
+                "tabellaCantieri"
+            );
+
+
+        if (!cantieri.length) {
+
+            corpo.innerHTML = `
+                <tr>
+                    <td colspan="5" class="empty">
+                        Nessun cantiere attivo.
+                    </td>
+                </tr>
+            `;
+
+            return;
+
+        }
+
+
+        corpo.innerHTML =
+            cantieri
+                .slice(0, 10)
+                .map(cantiere => `
+
+                    <tr>
+
+                        <td>
+                            <strong>
+                                ${escapeHtml(
+                                    cantiere.nome || "-"
+                                )}
+                            </strong>
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                cantiere.cliente || "-"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                cantiere.citta || "-"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                cantiere.caposquadra || "-"
+                            )}
+                        </td>
+
+                        <td>
+                            <span class="status">
+                                ${escapeHtml(
+                                    cantiere.stato || "Attivo"
+                                )}
+                            </span>
+                        </td>
+
+                    </tr>
+
+                `)
+                .join("");
+
+    }
+
+
+    function mostraSquadre(squadre) {
+
+        const corpo =
+            document.getElementById(
+                "tabellaSquadre"
+            );
+
+
+        if (!squadre.length) {
+
+            corpo.innerHTML = `
+                <tr>
+                    <td colspan="5" class="empty">
+                        Nessuna squadra attiva.
+                    </td>
+                </tr>
+            `;
+
+            return;
+
+        }
+
+
+        corpo.innerHTML =
+            squadre
+                .slice(0, 10)
+                .map(squadra => `
+
+                    <tr>
+
+                        <td>
+                            <strong>
+                                ${escapeHtml(
+                                    squadra.nome || "-"
+                                )}
+                            </strong>
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                squadra.caposquadra || "-"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                squadra.cantiere_nome || "-"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                squadra.numero_operai ?? 0
+                            )}
+                        </td>
+
+                        <td>
+                            <span class="status">
+                                ${escapeHtml(
+                                    squadra.stato || "Attiva"
+                                )}
+                            </span>
+                        </td>
+
+                    </tr>
+
+                `)
+                .join("");
+
+    }
+
+
+    function escapeHtml(valore) {
+
+        return String(valore)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+    }
+
+
+    caricaDati();
+
+</script>
 
 </body>
 </html>
