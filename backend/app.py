@@ -4,6 +4,10 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
+    return send_from_directory("../frontend", "login.html")
+
+@app.route("/dashboard")
+def dashboard():
     return send_from_directory("../frontend", "index.html")
 
 if __name__ == "__main__":
