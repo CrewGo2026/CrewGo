@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CrewGo</title>
+    <title>CrewGo - Dashboard</title>
 
     <style>
         * {
@@ -31,11 +31,26 @@
             font-weight: bold;
         }
 
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
         .role {
             background: #2563eb;
             padding: 8px 14px;
             border-radius: 20px;
             font-size: 14px;
+        }
+
+        .logout {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            border: 1px solid #475569;
+            padding: 8px 12px;
+            border-radius: 8px;
         }
 
         main {
@@ -64,6 +79,9 @@
             padding: 24px;
             border-radius: 16px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            text-decoration: none;
+            color: inherit;
+            display: block;
             cursor: pointer;
             transition: transform 0.2s;
         }
@@ -98,8 +116,23 @@
 <body>
 
 <header>
-    <div class="logo">CrewGo</div>
-    <div class="role">AREA TITOLARE</div>
+
+    <div class="logo">
+        CrewGo
+    </div>
+
+    <div class="header-right">
+
+        <div class="role">
+            AREA TITOLARE
+        </div>
+
+        <a class="logout" href="/logout">
+            Esci
+        </a>
+
+    </div>
+
 </header>
 
 <main>
@@ -112,53 +145,53 @@
 
     <div class="grid">
 
-        <div class="card">
+        <a class="card" href="/operai">
             <div class="icon">👷</div>
             <h2>Operai</h2>
             <p>Gestisci dipendenti, mansioni, livelli, documenti e ore.</p>
-        </div>
+        </a>
 
-        <div class="card">
+        <a class="card" href="#">
             <div class="icon">🏗️</div>
             <h2>Cantieri</h2>
             <p>Organizza cantieri, clienti, indirizzi e posizioni GPS.</p>
-        </div>
+        </a>
 
-        <div class="card">
+        <a class="card" href="#">
             <div class="icon">👥</div>
             <h2>Squadre</h2>
             <p>Organizza squadre, capisquadra, persone e mezzi.</p>
-        </div>
+        </a>
 
-        <div class="card">
+        <a class="card" href="#">
             <div class="icon">🚐</div>
             <h2>Mezzi</h2>
             <p>Gestisci furgoni, automezzi, attrezzature e assegnazioni.</p>
-        </div>
+        </a>
 
-        <div class="card">
+        <a class="card" href="#">
             <div class="icon">🕐</div>
             <h2>Ore lavorate</h2>
             <p>Controlla ore ordinarie, straordinari e anomalie.</p>
-        </div>
+        </a>
 
-        <div class="card">
+        <a class="card" href="#">
             <div class="icon">📄</div>
             <h2>Documenti</h2>
             <p>POS, buste paga, CUD e documentazione aziendale.</p>
-        </div>
+        </a>
 
-        <div class="card">
+        <a class="card" href="#">
             <div class="icon">💶</div>
             <h2>Fatture e pagamenti</h2>
             <p>Controlla fatture, scadenze e pagamenti ricevuti.</p>
-        </div>
+        </a>
 
-        <div class="card">
+        <a class="card" href="#">
             <div class="icon">🤖</div>
             <h2>Assistente CrewGo</h2>
             <p>Organizza il lavoro anche attraverso la voce.</p>
-        </div>
+        </a>
 
     </div>
 

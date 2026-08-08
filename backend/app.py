@@ -41,6 +41,14 @@ def dashboard():
     return send_from_directory("../frontend", "index.html")
 
 
+@app.route("/operai")
+def operai():
+    if "utente" not in session:
+        return redirect("/")
+
+    return send_from_directory("../frontend", "operai.html")
+
+
 @app.route("/logout")
 def logout():
     session.clear()
