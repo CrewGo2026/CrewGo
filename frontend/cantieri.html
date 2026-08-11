@@ -480,7 +480,7 @@
                     <th>Indirizzo</th>
                     <th>Periodo</th>
                     <th>Caposquadra</th>
-                    <th>Stato</th>
+                    <th>Stato</th><th>Dettagli</th>
                     <th>Azioni</th>
                 </tr>
 
@@ -504,6 +504,16 @@
 
 </main>
 
+
+<div class="modal" id="modalDettagliCantiere">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2 id="titoloDettagliCantiere">Dettaglio cantiere</h2>
+            <button class="close" onclick="chiudiDettagliCantiere()">×</button>
+        </div>
+        <div id="contenutoDettagliCantiere"></div>
+    </div>
+</div>
 
 <div class="modal" id="modalCantiere">
 
@@ -1052,7 +1062,111 @@
     }
 
 
-    function mostraCantieri() {
+    async function mostraDettagliCantiere(id) {
+          const cantiere = cantieri.find(item => item.id === id);
+          if (!cantiere) return;
+
+          let oreTotali = 0;
+          let squadreTotali = 0;
+          let squadreOperative = [];
+          let operaiTotali = 0;
+          let mezziTotali = 0;
+
+          try {
+              const [rSquadre, rOperai, rMezzi] = await Promise.all([
+                  fetch("/api/squadre"),
+                  fetch("/api/operai"),
+                  fetch("/api/mezzi")
+              ]);
+
+              if (rSquadre.ok) {
+                  const squadre = await rSquadre.json();
+                  squadreOperative = squadre.filter(x =>
+                      String(x.cantiere_id || "") === String(id)
+                   ).length;
+                  squadreTotali = squadreOperative.length;
+              }
+
+              if (rOperai.ok) {
+                  const operai = await rOperai.json();
+                  operaiTotali = operai.filter(x =>
+                      String(x.cantiere_id || "") === String(id)
+                  ).length;
+              }
+
+              if (rMezzi.ok) {
+                  const mezzi = await rMezzi.json();
+                  mezziTotali = mezzi.filter(x =>
+                      String(x.cantiere_id || "") === String(id)
+                  ).length;
+              }
+          } catch (e) {}
+
+          try {
+              const rispostaOre = await fetch("/api/ore");
+              if (rispostaOre.ok) {
+                  const ore = await rispostaOre.json();
+                  oreTotali = ore
+                      .filter(ora => String(ora.cantiere_id) === String(id))
+                      .reduce((totale, ora) =>
+                          totale +
+                          Number(ora.ore_ordinarie || 0) +
+                          Number(ora.ore_straordinarie || 0), 0);
+              }
+          } catch (e) {}
+
+          document.getElementById("titoloDettagliCantiere").textContent = cantiere.nome || "Dettaglio cantiere";
+          document.getElementById("contenutoDettagliCantiere").innerHTML = `
+              <div class="stats">
+                  <div class="stat"><div class="stat-number">${escapeHtml(cantiere.cliente || "—")}</div><div class="stat-label">Cliente</div></div>
+                  <div class="stat"><div class="stat-number">${escapeHtml(cantiere.citta || "—")}</div><div class="stat-label">Località</div></div>
+                  <div class="stat"><div class="stat-number">${escapeHtml(cantiere.stato || "Attivo")}</div><div class="stat-label">Stato</div></div>
+              </div>
+              <div style="background:#f8fafc;padding:18px;border-radius:12px;margin-top:15px;">
+                  <p><strong>📍 Indirizzo:</strong> ${escapeHtml(cantiere.indirizzo || "—")}</p>
+                  <p><strong>📅 Inizio:</strong> ${formattaData(cantiere.data_inizio)}</p>
+                  <p><strong>📅 Fine:</strong> ${formattaData(cantiere.data_fine)}</p>
+                  <p><strong>👤 Caposquadra:</strong> ${escapeHtml(cantiere.caposquadra || "—")}</p>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin-top:20px;">
+                  <div class="stat">
+                      <div class="stat-number" id="dettaglioSquadre">0</div>
+                      <div class="stat-label">👥 Squadre assegnate</div>
+                  </div>
+                  <div class="stat">
+                      <div class="stat-number" id="dettaglioOperai">0</div>
+                      <div class="stat-label">👷 Operai</div>
+                  </div>
+                  <div class="stat">
+                      <div class="stat-number" id="dettaglioMezzi">0</div>
+                      <div class="stat-label">🚐 Mezzi</div>
+                  </div>
+                  <div class="stat">
+                      <div class="stat-number" id="dettaglioOre">0</div>
+                      <div class="stat-label">🕐 Ore lavorate</div>
+                  </div>
+              </div>
+              <div style="margin-top:20px;background:#f8fafc;padding:18px;border-radius:12px;">
+                  <h3 style="margin-top:0;">Attività del cantiere</h3>
+                  <p style="color:#64748b;margin-bottom:0;">Qui verranno visualizzati operai, squadre, mezzi e ore registrate sul cantiere.</p>
+              </div>
+          `;
+          document.getElementById("dettaglioSquadre").textContent = squadreTotali;
+          document.getElementById("dettaglioOperai").textContent = operaiTotali;
+          document.getElementById("dettaglioMezzi").textContent = mezziTotali;
+          document.getElementById("dettaglioOre").textContent =
+              oreTotali.toFixed(2).replace(".00", "");
+
+          document.getElementById("modalDettagliCantiere").classList.add("show");
+      }
+
+
+      function chiudiDettagliCantiere() {
+          document.getElementById("modalDettagliCantiere").classList.remove("show");
+      }
+
+
+            function mostraCantieri() {
 
         const tbody =
             document
@@ -1137,7 +1251,7 @@
 
                 riga.innerHTML = `
 
-                    <td class="name">
+                    <td><button class="action-button edit" onclick="mostraDettagliCantiere(${cantiere.id})">APRI</button></td><td class="name">
                         ${escapeHtml(
                             cantiere.nome
                         )}
