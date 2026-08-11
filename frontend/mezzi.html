@@ -15,7 +15,7 @@ main{max-width:1200px;margin:auto;padding:30px}
 h1{margin:0 0 6px}.sub{color:#64748b}
 button{border:0;border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:bold}
 .primary{background:#2563eb;color:white}.danger{background:#dc2626;color:white}.edit{background:#e2e8f0}
-.filters{background:white;padding:16px;border-radius:12px;margin-bottom:20px;display:flex;gap:12px}
+.stat{background:white;padding:18px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.06)}.stat-number{font-size:26px;font-weight:bold;margin-bottom:5px}.stat-label{color:#64748b;font-size:14px}@media(max-width:900px){#statisticheMezzi{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:500px){#statisticheMezzi{grid-template-columns:1fr!important}}.filters{background:white;padding:16px;border-radius:12px;margin-bottom:20px;display:flex;gap:12px}
 input,select{padding:10px;border:1px solid #cbd5e1;border-radius:7px;flex:1}
 .table{background:white;border-radius:12px;overflow:auto}
 table{width:100%;border-collapse:collapse}
@@ -42,7 +42,7 @@ th{background:#f8fafc}
 <button class="primary" onclick="nuovo()">+ Nuovo mezzo</button>
 </div>
 
-<div class="filters">
+<div id="statisticheMezzi" style="display:grid;grid-template-columns:repeat(5,1fr);gap:15px;margin-bottom:20px;"><div class="stat"><div class="stat-number" id="statTotale">0</div><div class="stat-label">🚐 Totale mezzi</div></div><div class="stat"><div class="stat-number" id="statDisponibili">0</div><div class="stat-label">🟢 Disponibili</div></div><div class="stat"><div class="stat-number" id="statInUso">0</div><div class="stat-label">🔵 In uso</div></div><div class="stat"><div class="stat-number" id="statManutenzione">0</div><div class="stat-label">🟠 Manutenzione</div></div><div class="stat"><div class="stat-number" id="statFuoriServizio">0</div><div class="stat-label">🔴 Fuori servizio</div></div></div><div class="filters">
 <input id="cerca" placeholder="Cerca nome, targa, marca..." oninput="render()">
 <select id="fc" onchange="render()"><option value="">Tutte le categorie</option><option>Mezzo</option><option>Furgone</option><option>Automezzo</option><option>Attrezzatura</option><option>Altro</option></select>
 <select id="fs" onchange="render()"><option value="">Tutti gli stati</option><option>Disponibile</option><option>In uso</option><option>Manutenzione</option><option>Fuori servizio</option></select>
@@ -99,6 +99,11 @@ const arr=mezzi.filter(x=>{
 const testo=`${x.nome||""} ${x.marca||""} ${x.modello||""} ${x.targa||""}`.toLowerCase();
 return (!q||testo.includes(q))&&(!cat||x.categoria===cat)&&(!st||x.stato===st);
 });
+document.getElementById("statTotale").textContent=mezzi.length;
+document.getElementById("statDisponibili").textContent=mezzi.filter(x=>String(x.stato||"").toLowerCase()==="disponibile").length;
+document.getElementById("statInUso").textContent=mezzi.filter(x=>String(x.stato||"").toLowerCase()==="in uso").length;
+document.getElementById("statManutenzione").textContent=mezzi.filter(x=>["manutenzione","in manutenzione"].includes(String(x.stato||"").toLowerCase())).length;
+document.getElementById("statFuoriServizio").textContent=mezzi.filter(x=>String(x.stato||"").toLowerCase()==="fuori servizio").length;
 if(!arr.length){lista.innerHTML='<tr><td colspan="8" style="text-align:center;padding:35px">Nessun mezzo trovato.</td></tr>';return}
 arr.forEach(x=>{
 lista.innerHTML+=`<tr>
