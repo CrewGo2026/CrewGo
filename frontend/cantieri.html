@@ -1381,6 +1381,97 @@
               </div>
           `;
 
+
+          cantiereDettaglioId = id;
+
+          document.getElementById("contenutoDettagliCantiere").innerHTML += `
+              <div style="
+                  margin-top:22px;
+                  background:#eef4ff;
+                  padding:20px;
+                  border-radius:12px;
+                  border:1px solid #dbeafe;
+              ">
+                  <h3 style="margin-top:0;">⚙️ Gestione cantiere</h3>
+
+                  <div style="
+                      display:grid;
+                      grid-template-columns:repeat(3,1fr);
+                      gap:12px;
+                  ">
+
+                      <div style="background:white;padding:14px;border-radius:10px;">
+                          <strong>👥 Assegna squadra</strong>
+                          <select id="assegnaSquadraSelect"
+                              style="width:100%;margin-top:8px;padding:9px;">
+                          </select>
+                          <button
+                              onclick="assegnaSquadraAlCantiere()"
+                              style="
+                                  width:100%;
+                                  margin-top:8px;
+                                  background:#2563eb;
+                                  color:white;
+                                  border:0;
+                                  padding:10px;
+                                  border-radius:8px;
+                                  cursor:pointer;
+                              ">
+                              ASSEGNA
+                          </button>
+                      </div>
+
+                      <div style="background:white;padding:14px;border-radius:10px;">
+                          <strong>👷 Assegna operaio</strong>
+                          <select id="assegnaOperaioSelect"
+                              style="width:100%;margin-top:8px;padding:9px;">
+                          </select>
+                          <button
+                              onclick="assegnaOperaioAlCantiere()"
+                              style="
+                                  width:100%;
+                                  margin-top:8px;
+                                  background:#2563eb;
+                                  color:white;
+                                  border:0;
+                                  padding:10px;
+                                  border-radius:8px;
+                                  cursor:pointer;
+                              ">
+                              ASSEGNA
+                          </button>
+                          <small style="display:block;color:#64748b;margin-top:6px;">
+                              L'operaio verrà assegnato alla squadra del cantiere.
+                          </small>
+                      </div>
+
+                      <div style="background:white;padding:14px;border-radius:10px;">
+                          <strong>🚐 Assegna mezzo</strong>
+                          <select id="assegnaMezzoSelect"
+                              style="width:100%;margin-top:8px;padding:9px;">
+                          </select>
+                          <button
+                              onclick="assegnaMezzoAlCantiere()"
+                              style="
+                                  width:100%;
+                                  margin-top:8px;
+                                  background:#2563eb;
+                                  color:white;
+                                  border:0;
+                                  padding:10px;
+                                  border-radius:8px;
+                                  cursor:pointer;
+                              ">
+                              ASSEGNA
+                          </button>
+                      </div>
+
+                  </div>
+              </div>
+          `;
+
+          await preparaAssegnazioni(id);
+
           document
               .getElementById("modalDettagliCantiere")
               .classList.add("show");
@@ -1389,6 +1480,233 @@
 
 
 
+
+
+
+      let cantiereDettaglioId = null;
+      let datiSquadreAssegnazione = [];
+      let datiOperaiAssegnazione = [];
+      let datiMezziAssegnazione = [];
+
+      async function preparaAssegnazioni(cantiereId) {
+          try {
+              const [rSquadre, rOperai, rMezzi] = await Promise.all([
+                  fetch("/api/squadre"),
+                  fetch("/api/operai"),
+                  fetch("/api/mezzi")
+              ]);
+
+              datiSquadreAssegnazione =
+                  rSquadre.ok ? await rSquadre.json() : [];
+
+              datiOperaiAssegnazione =
+                  rOperai.ok ? await rOperai.json() : [];
+
+              datiMezziAssegnazione =
+                  rMezzi.ok ? await rMezzi.json() : [];
+
+              const squadraSelect =
+                  document.getElementById("assegnaSquadraSelect");
+
+              const operaioSelect =
+                  document.getElementById("assegnaOperaioSelect");
+
+              const mezzoSelect =
+                  document.getElementById("assegnaMezzoSelect");
+
+              squadraSelect.innerHTML =
+                  '<option value="">Seleziona squadra...</option>' +
+                  datiSquadreAssegnazione.map(x =>
+                      `<option value="${x.id}">
+                          ${escapeHtml(x.nome || "Squadra")}
+                       </option>`
+                  ).join("");
+
+              operaioSelect.innerHTML =
+                  '<option value="">Seleziona operaio...</option>' +
+                  datiOperaiAssegnazione.map(x => {
+                      const nome =
+                          `${x.nome || ""} ${x.cognome || ""}`.trim()
+                          || x.nome_completo
+                          || x.nominativo
+                          || "Operaio";
+
+                      return `<option value="${x.id}">
+                          ${escapeHtml(nome)}
+                      </option>`;
+                  }).join("");
+
+              mezzoSelect.innerHTML =
+                  '<option value="">Seleziona mezzo...</option>' +
+                  datiMezziAssegnazione.map(x =>
+                      `<option value="${x.id}">
+                          ${escapeHtml(x.nome || "Mezzo")}
+                          ${x.targa ? " - " + escapeHtml(x.targa) : ""}
+                       </option>`
+                  ).join("");
+
+          } catch (errore) {
+              console.error("Errore assegnazioni:", errore);
+          }
+      }
+
+
+      async function assegnaSquadraAlCantiere() {
+          const select =
+              document.getElementById("assegnaSquadraSelect");
+
+          const id = select.value;
+
+          if (!id) {
+              alert("Seleziona una squadra.");
+              return;
+          }
+
+          const squadra =
+              datiSquadreAssegnazione.find(
+                  x => String(x.id) === String(id)
+              );
+
+          if (!squadra) return;
+
+          const risposta = await fetch(
+              `/api/squadre/${id}`,
+              {
+                  method: "PUT",
+                  headers: {
+                      "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                      nome: squadra.nome || "",
+                      caposquadra: squadra.caposquadra || "",
+                      cantiere_id: cantiereDettaglioId,
+                      stato: squadra.stato || "Attiva"
+                  })
+              }
+          );
+
+          const risultato = await risposta.json();
+
+          if (!risposta.ok) {
+              alert(risultato.errore || "Errore assegnazione squadra.");
+              return;
+          }
+
+          await mostraDettagliCantiere(cantiereDettaglioId);
+      }
+
+
+      async function assegnaOperaioAlCantiere() {
+          const operaioId =
+              document.getElementById("assegnaOperaioSelect").value;
+
+          if (!operaioId) {
+              alert("Seleziona un operaio.");
+              return;
+          }
+
+          const squadreCantiere =
+              datiSquadreAssegnazione.filter(
+                  x => String(x.cantiere_id || "") ===
+                       String(cantiereDettaglioId)
+              );
+
+          if (!squadreCantiere.length) {
+              alert(
+                  "Prima assegna almeno una squadra al cantiere."
+              );
+              return;
+          }
+
+          const squadraId =
+              squadreCantiere[0].id;
+
+          const operaio =
+              datiOperaiAssegnazione.find(
+                  x => String(x.id) === String(operaioId)
+              );
+
+          if (!operaio) return;
+
+          const risposta = await fetch(
+              `/api/operai/${operaioId}`,
+              {
+                  method: "PUT",
+                  headers: {
+                      "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                      nome: operaio.nome || "",
+                      cognome: operaio.cognome || "",
+                      email: operaio.email || "",
+                      telefono: operaio.telefono || "",
+                      mansione: operaio.mansione || "",
+                      squadra_id: squadraId,
+                      data_assunzione:
+                          operaio.data_assunzione || "",
+                      stato: operaio.stato || "Attivo"
+                  })
+              }
+          );
+
+          const risultato = await risposta.json();
+
+          if (!risposta.ok) {
+              alert(risultato.errore || "Errore assegnazione operaio.");
+              return;
+          }
+
+          await mostraDettagliCantiere(cantiereDettaglioId);
+      }
+
+
+      async function assegnaMezzoAlCantiere() {
+          const id =
+              document.getElementById("assegnaMezzoSelect").value;
+
+          if (!id) {
+              alert("Seleziona un mezzo.");
+              return;
+          }
+
+          const mezzo =
+              datiMezziAssegnazione.find(
+                  x => String(x.id) === String(id)
+              );
+
+          if (!mezzo) return;
+
+          const risposta = await fetch(
+              `/api/mezzi/${id}`,
+              {
+                  method: "PUT",
+                  headers: {
+                      "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                      nome: mezzo.nome || "",
+                      categoria: mezzo.categoria || "Mezzo",
+                      marca: mezzo.marca || "",
+                      modello: mezzo.modello || "",
+                      targa: mezzo.targa || "",
+                      matricola: mezzo.matricola || "",
+                      stato: mezzo.stato || "Disponibile",
+                      cantiere_id: cantiereDettaglioId,
+                      squadra_id: mezzo.squadra_id || null,
+                      note: mezzo.note || ""
+                  })
+              }
+          );
+
+          const risultato = await risposta.json();
+
+          if (!risposta.ok) {
+              alert(risultato.errore || "Errore assegnazione mezzo.");
+              return;
+          }
+
+          await mostraDettagliCantiere(cantiereDettaglioId);
+      }
 
 
       function chiudiDettagliCantiere() {
