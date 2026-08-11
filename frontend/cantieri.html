@@ -1061,104 +1061,150 @@
 
     }
 
-
-    async function mostraDettagliCantiere(id) {
-          const cantiere = cantieri.find(item => item.id === id);
+      async function mostraDettagliCantiere(id) {
+          const cantiere = cantieri.find(item => String(item.id) === String(id));
           if (!cantiere) return;
 
-          let oreTotali = 0;
-          let squadreTotali = 0;
-          let squadreOperative = [];
-          let operaiTotali = 0;
-          let mezziTotali = 0;
+          let squadre = [];
+          let operai = [];
+          let mezzi = [];
+          let ore = [];
 
           try {
-              const [rSquadre, rOperai, rMezzi] = await Promise.all([
+              const risposte = await Promise.all([
                   fetch("/api/squadre"),
                   fetch("/api/operai"),
-                  fetch("/api/mezzi")
+                  fetch("/api/mezzi"),
+                  fetch("/api/ore")
               ]);
 
-              if (rSquadre.ok) {
-                  const squadre = await rSquadre.json();
-                  squadreOperative = squadre.filter(x =>
-                      String(x.cantiere_id || "") === String(id)
-                   ).length;
-                  squadreTotali = squadreOperative.length;
-              }
+              if (risposte[0].ok) squadre = await risposte[0].json();
+              if (risposte[1].ok) operai = await risposte[1].json();
+              if (risposte[2].ok) mezzi = await risposte[2].json();
+              if (risposte[3].ok) ore = await risposte[3].json();
+          } catch (errore) {
+              console.error("Errore caricamento dati cantiere:", errore);
+          }
 
-              if (rOperai.ok) {
-                  const operai = await rOperai.json();
-                  operaiTotali = operai.filter(x =>
-                      String(x.cantiere_id || "") === String(id)
-                  ).length;
-              }
+          const squadreCantiere = squadre.filter(x =>
+              String(x.cantiere_id || "") === String(id)
+          );
 
-              if (rMezzi.ok) {
-                  const mezzi = await rMezzi.json();
-                  mezziTotali = mezzi.filter(x =>
-                      String(x.cantiere_id || "") === String(id)
-                  ).length;
-              }
-          } catch (e) {}
+          const idsSquadre = new Set(
+              squadreCantiere.map(x => String(x.id))
+          );
 
-          try {
-              const rispostaOre = await fetch("/api/ore");
-              if (rispostaOre.ok) {
-                  const ore = await rispostaOre.json();
-                  oreTotali = ore
-                      .filter(ora => String(ora.cantiere_id) === String(id))
-                      .reduce((totale, ora) =>
-                          totale +
-                          Number(ora.ore_ordinarie || 0) +
-                          Number(ora.ore_straordinarie || 0), 0);
-              }
-          } catch (e) {}
+          const operaiCantiere = operai.filter(x =>
+              String(x.cantiere_id || "") === String(id) ||
+              idsSquadre.has(String(x.squadra_id || ""))
+          );
 
-          document.getElementById("titoloDettagliCantiere").textContent = cantiere.nome || "Dettaglio cantiere";
+          const mezziCantiere = mezzi.filter(x =>
+              String(x.cantiere_id || "") === String(id)
+          );
+
+          const oreCantiere = ore.filter(x =>
+              String(x.cantiere_id || "") === String(id)
+          );
+
+          const oreOrdinarie = oreCantiere.reduce(
+              (totale, x) => totale + Number(x.ore_ordinarie || 0), 0
+          );
+
+          const oreStraordinarie = oreCantiere.reduce(
+              (totale, x) => totale + Number(x.ore_straordinarie || 0), 0
+          );
+
+          const oreTotali = oreOrdinarie + oreStraordinarie;
+
+          const elencoSquadre = squadreCantiere.length
+              ? squadreCantiere.map(x =>
+                  `<div style="padding:10px;background:white;border-radius:8px;margin-bottom:8px;">
+                      👥 <strong>${escapeHtml(x.nome || "Squadra")}</strong>
+                  </div>`
+                ).join("")
+              : `<div style="color:#64748b;">Nessuna squadra assegnata.</div>`;
+
+          const elencoOperai = operaiCantiere.length
+              ? operaiCantiere.map(x =>
+                  `<div style="padding:10px;background:white;border-radius:8px;margin-bottom:8px;">
+                      👷 <strong>${escapeHtml(
+                          ((x.nome || "") + " " + (x.cognome || "")).trim() || "Operaio"
+                      )}</strong>
+                  </div>`
+                ).join("")
+              : `<div style="color:#64748b;">Nessun operaio assegnato.</div>`;
+
+          const elencoMezzi = mezziCantiere.length
+              ? mezziCantiere.map(x =>
+                  `<div style="padding:10px;background:white;border-radius:8px;margin-bottom:8px;">
+                      🚐 <strong>${escapeHtml(x.nome || "Mezzo")}</strong>
+                      ${x.targa ? ` — ${escapeHtml(x.targa)}` : ""}
+                  </div>`
+                ).join("")
+              : `<div style="color:#64748b;">Nessun mezzo assegnato.</div>`;
+
+          document.getElementById("titoloDettagliCantiere").textContent =
+              cantiere.nome || "Dettaglio cantiere";
+
           document.getElementById("contenutoDettagliCantiere").innerHTML = `
               <div class="stats">
-                  <div class="stat"><div class="stat-number">${escapeHtml(cantiere.cliente || "—")}</div><div class="stat-label">Cliente</div></div>
-                  <div class="stat"><div class="stat-number">${escapeHtml(cantiere.citta || "—")}</div><div class="stat-label">Località</div></div>
-                  <div class="stat"><div class="stat-number">${escapeHtml(cantiere.stato || "Attivo")}</div><div class="stat-label">Stato</div></div>
-              </div>
-              <div style="background:#f8fafc;padding:18px;border-radius:12px;margin-top:15px;">
-                  <p><strong>📍 Indirizzo:</strong> ${escapeHtml(cantiere.indirizzo || "—")}</p>
-                  <p><strong>📅 Inizio:</strong> ${formattaData(cantiere.data_inizio)}</p>
-                  <p><strong>📅 Fine:</strong> ${formattaData(cantiere.data_fine)}</p>
-                  <p><strong>👤 Caposquadra:</strong> ${escapeHtml(cantiere.caposquadra || "—")}</p>
-              </div>
-              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin-top:20px;">
                   <div class="stat">
-                      <div class="stat-number" id="dettaglioSquadre">0</div>
-                      <div class="stat-label">👥 Squadre assegnate</div>
+                      <div class="stat-number">${squadreCantiere.length}</div>
+                      <div class="stat-label">👥 Squadre</div>
                   </div>
                   <div class="stat">
-                      <div class="stat-number" id="dettaglioOperai">0</div>
+                      <div class="stat-number">${operaiCantiere.length}</div>
                       <div class="stat-label">👷 Operai</div>
                   </div>
                   <div class="stat">
-                      <div class="stat-number" id="dettaglioMezzi">0</div>
+                      <div class="stat-number">${mezziCantiere.length}</div>
                       <div class="stat-label">🚐 Mezzi</div>
                   </div>
                   <div class="stat">
-                      <div class="stat-number" id="dettaglioOre">0</div>
-                      <div class="stat-label">🕐 Ore lavorate</div>
+                      <div class="stat-number">${oreTotali.toFixed(2).replace(".00", "")}</div>
+                      <div class="stat-label">🕐 Ore totali</div>
                   </div>
               </div>
-              <div style="margin-top:20px;background:#f8fafc;padding:18px;border-radius:12px;">
-                  <h3 style="margin-top:0;">Attività del cantiere</h3>
-                  <p style="color:#64748b;margin-bottom:0;">Qui verranno visualizzati operai, squadre, mezzi e ore registrate sul cantiere.</p>
+
+              <div style="background:#f8fafc;padding:18px;border-radius:12px;margin-top:15px;">
+                  <p><strong>👤 Cliente:</strong> ${escapeHtml(cantiere.cliente || "—")}</p>
+                  <p><strong>📍 Località:</strong> ${escapeHtml(cantiere.citta || "—")}</p>
+                  <p><strong>🏠 Indirizzo:</strong> ${escapeHtml(cantiere.indirizzo || "—")}</p>
+                  <p><strong>📅 Periodo:</strong> ${formattaData(cantiere.data_inizio)} → ${formattaData(cantiere.data_fine)}</p>
+                  <p><strong>👤 Caposquadra:</strong> ${escapeHtml(cantiere.caposquadra || "—")}</p>
+                  <p style="margin-bottom:0;"><strong>📌 Stato:</strong> ${escapeHtml(cantiere.stato || "Attivo")}</p>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px;">
+                  <div style="background:#f8fafc;padding:18px;border-radius:12px;">
+                      <h3 style="margin-top:0;">👥 Squadre assegnate</h3>
+                      ${elencoSquadre}
+                  </div>
+
+                  <div style="background:#f8fafc;padding:18px;border-radius:12px;">
+                      <h3 style="margin-top:0;">👷 Operai</h3>
+                      ${elencoOperai}
+                  </div>
+
+                  <div style="background:#f8fafc;padding:18px;border-radius:12px;">
+                      <h3 style="margin-top:0;">🚐 Mezzi</h3>
+                      ${elencoMezzi}
+                  </div>
+
+                  <div style="background:#f8fafc;padding:18px;border-radius:12px;">
+                      <h3 style="margin-top:0;">🕐 Ore lavorate</h3>
+                      <p><strong>Ordinarie:</strong> ${oreOrdinarie.toFixed(2).replace(".00", "")} h</p>
+                      <p><strong>Straordinarie:</strong> ${oreStraordinarie.toFixed(2).replace(".00", "")} h</p>
+                      <p style="margin-bottom:0;"><strong>Totali:</strong> ${oreTotali.toFixed(2).replace(".00", "")} h</p>
+                  </div>
               </div>
           `;
-          document.getElementById("dettaglioSquadre").textContent = squadreTotali;
-          document.getElementById("dettaglioOperai").textContent = operaiTotali;
-          document.getElementById("dettaglioMezzi").textContent = mezziTotali;
-          document.getElementById("dettaglioOre").textContent =
-              oreTotali.toFixed(2).replace(".00", "");
 
           document.getElementById("modalDettagliCantiere").classList.add("show");
       }
+
+
 
 
       function chiudiDettagliCantiere() {
